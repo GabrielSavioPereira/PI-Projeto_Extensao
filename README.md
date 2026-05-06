@@ -3,17 +3,17 @@
 Aplicação mobile desenvolvida em React Native utilizando SQLite para armazenamento local de dados.
 O projeto foi criado com foco em performance, praticidade e gerenciamento de informações diretamente no dispositivo.
 ##
-🚀 Tecnologias Utilizadas
-⚛️ React Native
-📱 Expo
-🗄️ SQLite
-🎨 JavaScript
-🔥 Async/Await
-📦 React Navigation
-📋 Funcionalidades
-Cadastro de registros
-Listagem de dados
-Edição de informações
-Exclusão de registros
-Armazenamento local com SQLite
-Interface mobile responsiva
+<h2>🚀 Tecnologias Utilizadas</h2><br>
+⚛️ React Native<br>
+📱 Expo<br>
+🗄️ SQLite<br>
+🎨 JavaScript<br>
+🔥 Async/Await<br>
+📦 React Navigation<br>
+<h2>📋 Funcionalidades</h2><br>
+Cadastro de registros<br>
+Listagem de dados<br>
+Edição de informações<br>
+Exclusão de registros<br>
+Armazenamento local com SQLite<br>
+Interface mobile responsiva<br>
