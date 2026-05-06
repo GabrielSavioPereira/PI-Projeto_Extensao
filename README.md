@@ -1,4 +1,4 @@
-##Sistema Mobile em React Native
+#Sistema Mobile em React Native
 
 Aplicação mobile desenvolvida em React Native utilizando SQLite para armazenamento local de dados.
 O projeto foi criado com foco em performance, praticidade e gerenciamento de informações diretamente no dispositivo.
