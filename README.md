@@ -51,14 +51,13 @@ Protótipo desenvolvido no Figma:
 ## 🛠️ Tecnologias previstas
 
 Frontend:
-- React / React Native
-- TypeScript
+- React Native
 
 Backend:
 - Node.js
 
 Banco de Dados:
-- PostgreSQL
+- FireBase React Native
 
 Ferramentas:
 - Figma
