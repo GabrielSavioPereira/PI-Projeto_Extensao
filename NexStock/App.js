@@ -1,20 +1,9 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View } from 'react-native';
+import Login from "./screens/loginProject"
 
 export default function App() {
-  return (
-    <View style={styles.container}>
-      <Text>Ola, somos NexStock</Text>
-      <StatusBar style="auto" />
-    </View>
-  );
-}
+ 
+  return <Login/>
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+}
