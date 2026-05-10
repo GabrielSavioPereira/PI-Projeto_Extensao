@@ -1,14 +1,10 @@
-import { View, Button } from "react-native";
-
-import { criarCliente } from "./src/services/clienteService";
-
-
+import { NavigationContainer } from "@react-navigation/native"
+import AppNavigator from "./navigation/AppNavigator"
 export default function App() {
   return (
-    <View >
-      <Button onPress={criarCliente} title="Cria Cliente">
-      </Button>
-    </View>
+    <NavigationContainer>
+      <AppNavigator/>
+    </NavigationContainer>
   );
 }
 
