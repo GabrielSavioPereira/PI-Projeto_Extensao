@@ -1,15 +1,43 @@
 import React, { useState } from 'react';
-import {View,Text,TextInput,TouchableOpacity,StyleSheet,Image,} from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Alert } from 'react-native'; // Adicionado Alert
 import { Ionicons, Feather } from '@expo/vector-icons';
+import { signInWithEmailAndPassword } from "firebase/auth"; 
+import { auth } from '../dbconfig/config.js'; 
 
-export default function Login() {
-    
+export default function Login({ navigation }) {
+  
+  const [email, setEmail] = useState(''); 
+  const [senha, setSenha] = useState(''); 
   const [senhaVisivel, setSenhaVisivel] = useState(false);
+
+  const handleLogin = () => {
+    if (email === '' || senha === '') {
+      Alert.alert("Erro", "Por favor, preencha todos os campos.");
+      return;
+    }
+
+    signInWithEmailAndPassword(auth, email, senha)
+      .then((userCredential) => {
+        Alert.alert("Sucesso", "Bem-vindo ao NexStock!");
+        navigation.navigate('HomeScreen'); 
+      })
+      .catch((error) => {
+        let errorMessage = "Erro ao tentar entrar.";
+        if (error.code === 'auth/invalid-email') errorMessage = "E-mail inválido.";
+        if (error.code === 'auth/user-not-found') errorMessage = "Usuário não encontrado.";
+        if (error.code === 'auth/wrong-password') errorMessage = "Senha incorreta.";
+        if (error.code === 'auth/invalid-credential') errorMessage = "Credenciais inválidas.";
+        
+        Alert.alert("Erro", errorMessage);
+        console.log(error.code);
+      });
+  };
+
   return (
     <View style={styles.container}>
         <View style={styles.topContainer}>
         <Image
-          source={require('../assets/logoLogin.png')} // coloque sua logo aqui
+          source={require('../assets/logoLogin.png')} 
           style={styles.logo}
           resizeMode="contain"/>
       </View>
@@ -17,9 +45,12 @@ export default function Login() {
         <View style={styles.inputContainer}>
           <Feather name="mail" size={20} color="#C45F7D" />
           <TextInput
-            placeholder="Usuário"
-            placeholderTextColor="#C45F7D"
-            style={styles.input}/>
+          placeholder="Usuário"
+          placeholderTextColor="#C45F7D"
+          style={styles.input}
+          value={email}
+          onChangeText={setEmail}
+          autoCapitalize="none"/>
         </View>
         <View style={styles.inputContainer}>
           <Feather name="lock" size={20} color="#C45F7D" />
@@ -28,7 +59,9 @@ export default function Login() {
             placeholder="Senha"
             placeholderTextColor="#C45F7D"
             secureTextEntry={!senhaVisivel}
-            style={styles.input}/>
+            style={styles.input}
+            value={senha}
+            onChangeText={setSenha}/>
 
           <TouchableOpacity
             onPress={() => setSenhaVisivel(!senhaVisivel)}>
@@ -38,7 +71,9 @@ export default function Login() {
               color="#C45F7D"/>
           </TouchableOpacity>
         </View>
-        <TouchableOpacity style={styles.button}>
+        <TouchableOpacity 
+        style={styles.button}
+        onPress={handleLogin}>
           <Text style={styles.buttonText}>Entrar</Text>
         </TouchableOpacity>
 
@@ -51,6 +86,8 @@ export default function Login() {
     </View>
   );
 }
+
+
 
 const styles = StyleSheet.create({
   container: {

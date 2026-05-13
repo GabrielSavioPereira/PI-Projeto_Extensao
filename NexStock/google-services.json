@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "286165000595",
+    "project_id": "nexstock-database",
+    "storage_bucket": "nexstock-database.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:286165000595:android:a68954e7d5a4cc73398866",
+        "android_client_info": {
+          "package_name": "com.NexStock"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC20OU12rnjTj6nFbn2O2VSIiiHrJNBjSE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
