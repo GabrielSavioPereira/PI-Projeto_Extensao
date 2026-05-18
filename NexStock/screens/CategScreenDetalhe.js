@@ -7,34 +7,36 @@ import {
 
 import {use, useEffect, useState} from "react"
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
-import { addMarca, alteraMarca } from "../services/marcaService";
+import { addCateg, alteraCateg } from "../services/categoriaService";
 
-export default function MarcaScreenDetalhe({
+export default function CategScreenDetalhe({
     route
 }) {
 
-    const marca = route.params?.marca;
+    const categ = route.params?.categ;
 
     const [nome, setNome] = useState();
         
     async function  salvar() {
-        const objMarca = {
+        console.log("Opaa")
+
+        const objCateg = {
             "nome": nome,
         }
 
-        if (marca) {
-            const response = await alteraMarca(marca.documentoId, objMarca);
+        if (categ) {
+            const response = await alteraCateg(categ.documentoId, objCateg);
             
             if (response.success) {
-                alert("Marca Alterada com sucesso")
+                alert("Categoria Alterada com sucesso")
             } else {
                 alert(response.message)
             }
         } else {
-            const response = await addMarca(objMarca);
+            const response = await addCateg(objCateg);
 
             if (response.success) {
-                alert("Marca adicionado com sucesso!")
+                alert("Categoria adicionado com sucesso!")
             } else {
                 alert(response.message)
             }
@@ -44,8 +46,8 @@ export default function MarcaScreenDetalhe({
 
     useEffect(() => {
         
-        if (marca){
-            setNome(marca.nome)
+        if (categ){
+            setNome(categ.nome)
         }
 
     }, [])

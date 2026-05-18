@@ -2,15 +2,18 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
 
 import HomeScreen from "../screens/HomeScreen";
-import ProdutoScreenTest from "../screens/ProdutoScreenTest";
+import StackProdutos from "../navigation/StackProdutos";
 import ProdutoScreenDetalhe from "../screens/ProdutoScreenDetalhe";
+import StackMarca from "../navigation/StackMarca";
+import StackCateg from "../navigation/StackCateg";
 
 const Tab = createBottomTabNavigator();
 
 const TAB_ICONS = {
     Home: "home-outline",
     Produtos: "shirt-outline",
-    Detalhes: "search-outline",
+    Marca: "search-outline",
+    Categoria: "search-outline",
 };
 
 export default function BarraMenu() {
@@ -38,8 +41,9 @@ export default function BarraMenu() {
             })}
         >
             <Tab.Screen name="Home" component={HomeScreen} />
-            <Tab.Screen name="Produtos" component={ProdutoScreenTest} />
-            <Tab.Screen name="Detalhes" component={ProdutoScreenDetalhe} />
+            <Tab.Screen name="Produtos" component={StackProdutos} />
+            <Tab.Screen name="Marca" component={StackMarca} />
+            <Tab.Screen name="Categoria" component={StackCateg} />
         </Tab.Navigator>
     );
 }
