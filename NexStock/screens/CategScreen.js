@@ -1,36 +1,36 @@
 import React, { useEffect, useState } from "react";
 import {
-    buscaMarcas,
-    deletaMarca,
-    escutaMarcas
-} from "../services/marcaService";
+    buscaCateg,
+    deletaCateg,
+    escutaCategs
+} from "../services/categoriaService";
 import { ScrollView, View, StyleSheet, Text, Pressable, Button, Alert } from "react-native";
 
-export default function MarcaScreenTest({
+export default function CategScreen({
     navigation
 }) {
     const [nome, setNome] = useState("");
 
-    const [marcas, setMarcas] = useState([]);
+    const [categs, setCategs] = useState([]);
 
-    async function  fbuscaMarcas() {
-        const response = await buscaMarcas();
+    async function  fbuscaCategs() {
+        const response = await buscaCateg();
 
         if(response.success){
             setMarcas(
-                response.marcas
+                response.categs
             )
         }
         console.log("oiii")
-        console.log(response.marcas)
+        console.log(response.categs)
         console.log("opa")
     }
 
     function deletar(docId) {
 
         Alert.alert(
-            "Deletar Marca",
-            `Tem certeza que deseja excluir a marca?`,
+            "Deletar Catogoria",
+            `Tem certeza que deseja excluir a categoria?`,
             [
                 {
                     text: "Cancelar",
@@ -40,10 +40,10 @@ export default function MarcaScreenTest({
                     text: "Deletar",
                     style: "destructive",
                     onPress: async () => {
-                        const response = await deletaMarca(docId);
+                        const response = await deletaCateg(docId);
 
                         if (response.success){
-                            alert("Marcas Deletado com sucesso")
+                            alert("Categoria Deletada com sucesso")
                         } else {
                             alert(response.message)
                             console.log(response.error)
@@ -56,8 +56,8 @@ export default function MarcaScreenTest({
     }
 
     useEffect(() => {
-        const unsubscribe = escutaMarcas((dados) => {
-            setMarcas(dados);
+        const unsubscribe = escutaCategs((dados) => {
+            setCategs(dados);
         });
 
         return () => unsubscribe();
@@ -69,11 +69,11 @@ export default function MarcaScreenTest({
         >   
 
             <Text style={styles.title}>
-                Cadastro de marcas
+                Cadastro de categorias
             </Text>
 
             <Pressable
-                onPress={() => navigation.navigate("MarcaDetalhe")}
+                onPress={() => navigation.navigate("CategDetalhe")}
             >
                 <Text>
                     + NOVA MARCA
@@ -82,32 +82,32 @@ export default function MarcaScreenTest({
 
             <View style={{marginTop: 20}}>
                 {
-                    marcas.map(marca => (
+                    categs.map(categ => (
                         <Pressable
-                            key={marca.id}
+                            key={categ.id}
                             style={styles.card}
                             onPress={() => navigation.navigate(
-                                "MarcaDetalhe",
+                                "CategDetalhe",
                                 {
-                                    marca
+                                    categ
                                 }
                             )}
                         >
                             <View>
 
                             <Text style={styles.cardText}>
-                                ID: {marca.id}
+                                ID: {categ.id}
                             </Text>
 
                             <Text style={styles.cardTitle}>
-                                {marca.nome}
+                                {categ.nome}
                             </Text>
 
                             </View>
 
                             <Button
                                 title="Deletar"
-                                onPress={() => deletar(marca.documentoId)}
+                                onPress={() => deletar(categ.documentoId)}
                             />
                         </Pressable>
                     ))

@@ -1,36 +1,36 @@
 import React, { useEffect, useState } from "react";
 import {
-    buscaMarcas,
-    deletaMarca,
-    escutaMarcas
-} from "../services/marcaService";
+    buscaUmeds,
+    deletaUmeds,
+    escutaUmeds
+} from "../services/unmedidaService";
 import { ScrollView, View, StyleSheet, Text, Pressable, Button, Alert } from "react-native";
 
-export default function MarcaScreenTest({
+export default function UmedScreen({
     navigation
 }) {
     const [nome, setNome] = useState("");
 
-    const [marcas, setMarcas] = useState([]);
+    const [umeds, setUmeds] = useState([]);
 
-    async function  fbuscaMarcas() {
-        const response = await buscaMarcas();
+    async function  fbuscaUmeds() {
+        const response = await busUmed();
 
         if(response.success){
-            setMarcas(
-                response.marcas
+            setUmeds(
+                response.umeds
             )
         }
         console.log("oiii")
-        console.log(response.marcas)
+        console.log(response.umeds)
         console.log("opa")
     }
 
     function deletar(docId) {
 
         Alert.alert(
-            "Deletar Marca",
-            `Tem certeza que deseja excluir a marca?`,
+            "Deletar Unidade de medida",
+            `Tem certeza que deseja excluir a unidade de medida?`,
             [
                 {
                     text: "Cancelar",
@@ -40,10 +40,10 @@ export default function MarcaScreenTest({
                     text: "Deletar",
                     style: "destructive",
                     onPress: async () => {
-                        const response = await deletaMarca(docId);
+                        const response = await deletaUmeds(docId);
 
                         if (response.success){
-                            alert("Marcas Deletado com sucesso")
+                            alert("Unidade de medida Deletada com sucesso")
                         } else {
                             alert(response.message)
                             console.log(response.error)
@@ -56,8 +56,8 @@ export default function MarcaScreenTest({
     }
 
     useEffect(() => {
-        const unsubscribe = escutaMarcas((dados) => {
-            setMarcas(dados);
+        const unsubscribe = escutaUmeds((dados) => {
+            setUmeds(dados);
         });
 
         return () => unsubscribe();
@@ -69,11 +69,11 @@ export default function MarcaScreenTest({
         >   
 
             <Text style={styles.title}>
-                Cadastro de marcas
+                Cadastro de Unidade de Medida
             </Text>
 
             <Pressable
-                onPress={() => navigation.navigate("MarcaDetalhe")}
+                onPress={() => navigation.navigate("UmedDetalhe")}
             >
                 <Text>
                     + NOVA MARCA
@@ -82,32 +82,32 @@ export default function MarcaScreenTest({
 
             <View style={{marginTop: 20}}>
                 {
-                    marcas.map(marca => (
+                    umeds.map(umed => (
                         <Pressable
-                            key={marca.id}
+                            key={umed.id}
                             style={styles.card}
                             onPress={() => navigation.navigate(
-                                "MarcaDetalhe",
+                                "UmedDetalhe",
                                 {
-                                    marca
+                                    umed
                                 }
                             )}
                         >
                             <View>
 
                             <Text style={styles.cardText}>
-                                ID: {marca.id}
+                                ID: {umed.id}
                             </Text>
 
                             <Text style={styles.cardTitle}>
-                                {marca.nome}
+                                {umed.nome}
                             </Text>
 
                             </View>
 
                             <Button
                                 title="Deletar"
-                                onPress={() => deletar(marca.documentoId)}
+                                onPress={() => deletar(umed.documentoId)}
                             />
                         </Pressable>
                     ))

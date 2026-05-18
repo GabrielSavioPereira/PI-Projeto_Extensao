@@ -17,11 +17,11 @@ import {
 
 import { COLLECTIONS } from "../database/collections";
 
-const marcaRef = collection(db, COLLECTIONS.MARCAS);
+const umedRef = collection(db, COLLECTIONS.UNIDADES_MEDIDA);
 
-export function escutaMarcas(callback) {
+export function escutaUmeds(callback) {
     return onSnapshot(
-        marcaRef,
+        umedRef,
         (snapshot) => {
             const lista = []
 
@@ -37,55 +37,55 @@ export function escutaMarcas(callback) {
     )
 }
 
-export async function addMarca(marca) {
+export async function addUmeds(umed) {
     try {
         const q = query(
-            marcaRef,
+            umedRef,
             orderBy("id","desc"),
             limit(1)
         )
 
-        const marcas = await getDocs(q)
+        const umeds = await getDocs(q)
         
         let proximoId = 1;
 
-        if (!marcas.empty) {
-            const ultimaMarca = marcas.docs[0].data();
+        if (!umeds.empty) {
+            const ultimaUmed = umeds.docs[0].data();
 
-            proximoId = ultimaMarca.id + 1;
+            proximoId = ultimaUmed.id + 1;
         }
 
-        const novaMarca = `marca${proximoId}`;
+        const novaUmed = `umed${proximoId}`;
 
         await setDoc(
-            doc(marcaRef, novaMarca),
+            doc(umedRef, novaUmed),
             {
                 id: proximoId,
-                ...marca
+                ...umed
             }
         )
 
         return {
             success: true,
-            id: novaMarca,
-            message: "Marca adicionada com sucesso!"
+            id: novaUmed,
+            message: "Unidade de medida adicionada com sucesso!"
         }
 
     } catch (e) {
         return {
             success: false,
-            message: "Erro ao adicionar a marca: " + marca.nome,
+            message: "Erro ao adicionar a unidade de medida: " + categ.nome,
             error: e
         }
     }
 }
 
-export async function buscaMarcaId(id){
+export async function buscaUmedId(id){
    
    try {
 
         const q = query(
-            marcaRef,
+            umedRef,
             where("id", "==", id)
         );
 
@@ -95,15 +95,15 @@ export async function buscaMarcaId(id){
             return null
         }
 
-        const marca = snapshot.docs[0];
+        const umed = snapshot.docs[0];
 
         return {
-            ...marca.data()
+            ...umed.data()
         };
     } catch (error){
         return {
             success: false,
-            message: `Erro ao buscar o Marca ${id}`,
+            message: `Erro ao buscar o Unidade de medida ${id}`,
             error: e 
         }
     }
@@ -111,34 +111,34 @@ export async function buscaMarcaId(id){
 }
 
 
-export async function buscaMarcas() {
+export async function buscaUmeds() {
     try {
-        const snapshot = await getDoc(marcaRef);
+        const snapshot = await getDoc(umedRef);
 
-        const marcas = snapshot.docs.map(doc => ({
+        const umeds = snapshot.docs.map(doc => ({
             documentoId: doc.id,
             ...doc.data()
         }))
 
         return {
             success: true,
-            marcas
+            categs
         }
 
     } catch (e) {
         return {
             success: false,
-            message: "Erro ao buscar marcas",
+            message: "Erro ao buscar unidade de medidas",
             error: e
         }
     }
 }
 
-export async function deletaMarca(docId){
+export async function deletaUmeds(docId){
     try {
 
         await deleteDoc(doc(
-            marcaRef,
+            umedRef,
             docId
         ));
 
@@ -149,18 +149,18 @@ export async function deletaMarca(docId){
     } catch(e) {
         return {
             success: false,
-            message: "Erro ao deletar o marca: " + docId.toString(),
+            message: "Erro ao deletar a unidade de medida: " + docId.toString(),
             error: e
         }
     }
 }
 
-export async function alteraMarca(id, data){
+export async function alteraUmed(id, data){
     try {
 
         let documento = id;
 
-        let docRef = doc(marcaRef, documento)
+        let docRef = doc(umedRef, documento)
 
         const docSnap = await getDoc(docRef);
 
@@ -174,14 +174,14 @@ export async function alteraMarca(id, data){
         } else {
             return {
                 success: false,
-                message: "Produto não encontrado"
+                message: "Unidade de medida não encontrada"
             }
         }
 
     } catch(e) {
         return {
             success: false,
-            message: "Erro ao alterar o produto: " + id.toString(),
+            message: "Erro ao alterar a unidade de medida: " + id.toString(),
             error: e
         }
     }

@@ -17,11 +17,11 @@ import {
 
 import { COLLECTIONS } from "../database/collections";
 
-const marcaRef = collection(db, COLLECTIONS.MARCAS);
+const categRef = collection(db, COLLECTIONS.CATEGORIAS);
 
-export function escutaMarcas(callback) {
+export function escutaCategs(callback) {
     return onSnapshot(
-        marcaRef,
+        categRef,
         (snapshot) => {
             const lista = []
 
@@ -37,55 +37,55 @@ export function escutaMarcas(callback) {
     )
 }
 
-export async function addMarca(marca) {
+export async function addCateg(categ) {
     try {
         const q = query(
-            marcaRef,
+            categRef,
             orderBy("id","desc"),
             limit(1)
         )
 
-        const marcas = await getDocs(q)
+        const categs = await getDocs(q)
         
         let proximoId = 1;
 
-        if (!marcas.empty) {
-            const ultimaMarca = marcas.docs[0].data();
+        if (!categs.empty) {
+            const ultimaCateg = categs.docs[0].data();
 
-            proximoId = ultimaMarca.id + 1;
+            proximoId = ultimaCateg.id + 1;
         }
 
-        const novaMarca = `marca${proximoId}`;
+        const novaCateg = `categoria${proximoId}`;
 
         await setDoc(
-            doc(marcaRef, novaMarca),
+            doc(categRef, novaCateg),
             {
                 id: proximoId,
-                ...marca
+                ...categ
             }
         )
 
         return {
             success: true,
-            id: novaMarca,
-            message: "Marca adicionada com sucesso!"
+            id: novaCateg,
+            message: "Categoria adicionada com sucesso!"
         }
 
     } catch (e) {
         return {
             success: false,
-            message: "Erro ao adicionar a marca: " + marca.nome,
+            message: "Erro ao adicionar a categoria: " + categ.nome,
             error: e
         }
     }
 }
 
-export async function buscaMarcaId(id){
+export async function buscaCategId(id){
    
    try {
 
         const q = query(
-            marcaRef,
+            categRef,
             where("id", "==", id)
         );
 
@@ -95,15 +95,15 @@ export async function buscaMarcaId(id){
             return null
         }
 
-        const marca = snapshot.docs[0];
+        const umed = snapshot.docs[0];
 
         return {
-            ...marca.data()
+            ...umed.data()
         };
     } catch (error){
         return {
             success: false,
-            message: `Erro ao buscar o Marca ${id}`,
+            message: `Erro ao buscar o Unidade de medida ${id}`,
             error: e 
         }
     }
@@ -111,34 +111,34 @@ export async function buscaMarcaId(id){
 }
 
 
-export async function buscaMarcas() {
+export async function buscaCategs() {
     try {
-        const snapshot = await getDoc(marcaRef);
+        const snapshot = await getDoc(categRef);
 
-        const marcas = snapshot.docs.map(doc => ({
+        const categs = snapshot.docs.map(doc => ({
             documentoId: doc.id,
             ...doc.data()
         }))
 
         return {
             success: true,
-            marcas
+            categs
         }
 
     } catch (e) {
         return {
             success: false,
-            message: "Erro ao buscar marcas",
+            message: "Erro ao buscar categorias",
             error: e
         }
     }
 }
 
-export async function deletaMarca(docId){
+export async function deletaCateg(docId){
     try {
 
         await deleteDoc(doc(
-            marcaRef,
+            categRef,
             docId
         ));
 
@@ -149,18 +149,18 @@ export async function deletaMarca(docId){
     } catch(e) {
         return {
             success: false,
-            message: "Erro ao deletar o marca: " + docId.toString(),
+            message: "Erro ao deletar a categoria: " + docId.toString(),
             error: e
         }
     }
 }
 
-export async function alteraMarca(id, data){
+export async function alteraCateg(id, data){
     try {
 
         let documento = id;
 
-        let docRef = doc(marcaRef, documento)
+        let docRef = doc(categRef, documento)
 
         const docSnap = await getDoc(docRef);
 
@@ -174,14 +174,14 @@ export async function alteraMarca(id, data){
         } else {
             return {
                 success: false,
-                message: "Produto não encontrado"
+                message: "Categoria não encontrada"
             }
         }
 
     } catch(e) {
         return {
             success: false,
-            message: "Erro ao alterar o produto: " + id.toString(),
+            message: "Erro ao alterar a catogoria: " + id.toString(),
             error: e
         }
     }

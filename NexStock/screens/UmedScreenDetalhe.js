@@ -7,34 +7,36 @@ import {
 
 import {use, useEffect, useState} from "react"
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
-import { addMarca, alteraMarca } from "../services/marcaService";
+import { addUmeds, alteraUmed } from "../services/unmedidaService";
 
-export default function MarcaScreenDetalhe({
+export default function UmedScreenDetalhe({
     route
 }) {
 
-    const marca = route.params?.marca;
+    const umed = route.params?.umed;
 
     const [nome, setNome] = useState();
         
     async function  salvar() {
-        const objMarca = {
+        console.log("Opaa")
+
+        const objUmed = {
             "nome": nome,
         }
 
-        if (marca) {
-            const response = await alteraMarca(marca.documentoId, objMarca);
+        if (umed) {
+            const response = await alteraUmed(umed.documentoId, objUmed);
             
             if (response.success) {
-                alert("Marca Alterada com sucesso")
+                alert("Unidade de medida Alterada com sucesso")
             } else {
                 alert(response.message)
             }
         } else {
-            const response = await addMarca(objMarca);
+            const response = await addUmeds(objUmed);
 
             if (response.success) {
-                alert("Marca adicionado com sucesso!")
+                alert("Unidade de medida adicionado com sucesso!")
             } else {
                 alert(response.message)
             }
@@ -44,8 +46,8 @@ export default function MarcaScreenDetalhe({
 
     useEffect(() => {
         
-        if (marca){
-            setNome(marca.nome)
+        if (umed){
+            setNome(umed.nome)
         }
 
     }, [])
