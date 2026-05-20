@@ -76,7 +76,7 @@ export default function CategScreen({
                 onPress={() => navigation.navigate("CategDetalhe")}
             >
                 <Text>
-                    + NOVA MARCA
+                    + NOVA CATEGORIA
                 </Text>
             </Pressable>
 
