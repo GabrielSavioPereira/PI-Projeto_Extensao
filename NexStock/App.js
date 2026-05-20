@@ -18,7 +18,9 @@ export default function App() {
         if (fontsLoaded) SplashScreen.hideAsync();
     }, [fontsLoaded]);
 
-    if (!fontsLoaded) return null;
+    if (!fontsLoaded) { 
+        return null;
+    }
 
     return (
         <NavigationContainer>

@@ -76,7 +76,7 @@ export default function UmedScreen({
                 onPress={() => navigation.navigate("UmedDetalhe")}
             >
                 <Text>
-                    + NOVA MARCA
+                    + NOVA UNIDADE
                 </Text>
             </Pressable>
 
