@@ -113,7 +113,7 @@ export async function buscaCategId(id){
 
 export async function buscaCategs() {
     try {
-        const snapshot = await getDoc(categRef);
+        const snapshot = await getDocs(categRef);
 
         const categs = snapshot.docs.map(doc => ({
             documentoId: doc.id,

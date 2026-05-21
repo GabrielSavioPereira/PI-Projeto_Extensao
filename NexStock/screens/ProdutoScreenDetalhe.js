@@ -12,6 +12,9 @@ import {use, useEffect, useState} from "react"
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { Picker } from "@react-native-picker/picker"
 import { addProduto, alteraProduto } from "../services/produtoService";
+import { buscaMarcas } from "../services/marcaService";
+import { buscaCategs } from "../services/categoriaService";
+import { buscaUmeds } from "../services/unmedidaService";
 
 export default function ProdutoDetalheScreen({
     route
@@ -29,26 +32,44 @@ export default function ProdutoDetalheScreen({
     const [marca, setMarca]    = useState();
     const [unidades, setUnidades] = useState([]);
     const [unidade, setUnidade] = useState();
+    
+    async function listaMarcas() {
+        const response = await buscaMarcas();
 
-    async function listaCategorias() {
-        setCategorias([
-            {id: 1, nome: "Vestidos"},
-            {id: 0, nome: "Exemplo"}
-        ])
+        if (response.success) {
+            setMarcas(
+                response.marcas
+            )
+        }
+        
+        console.log("Marcas: ")
+        console.log(response.marcas)
     }
 
-    async function listaMarcas() {
-        setMarcas([
-            {id: 1, nome: "Damyler"},
-            {id: 0, nome: "Marca Exemplo"}
-        ])
+    async function  listaCategorias() {
+            const response = await buscaCategs();
+        
+            if(response.success){
+                setCategorias(
+                    response.categs
+                )
+            }
+            console.log("Categorias: ")
+            console.log(response.categs)
     }
 
     async function listaUnidades() {
-        setUnidades([
-            {id: 1, nome: "UN"},
-            {id: 0, nome: "Unidade Exemplo"}
-        ])
+        const response = await buscaUmeds();
+
+        if(response.success) {
+            setUnidades(
+                response.umeds
+            )
+        }
+
+        console.log("Unidade de medida: ")
+        console.log(response.umeds)
+        
     }
 
     async function  salvar() {
@@ -140,6 +161,7 @@ export default function ProdutoDetalheScreen({
                 <Picker.Item label="Selecione uma categoria..." value="" />
                 {
                     categorias.map((item) => (
+                        
                         <Picker.Item 
                             key={item.id}
                             label={item.nome}

@@ -113,7 +113,7 @@ export async function buscaUmedId(id){
 
 export async function buscaUmeds() {
     try {
-        const snapshot = await getDoc(umedRef);
+        const snapshot = await getDocs(umedRef);
 
         const umeds = snapshot.docs.map(doc => ({
             documentoId: doc.id,
@@ -122,7 +122,7 @@ export async function buscaUmeds() {
 
         return {
             success: true,
-            categs
+            umeds
         }
 
     } catch (e) {

@@ -1,9 +1,13 @@
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import 'react-native-gesture-handler';
 import { NavigationContainer } from "@react-navigation/native";
 import AppNavigator from "./navigation/AppNavigator";
 import { useFonts, Poppins_400Regular, Poppins_500Medium, Poppins_600SemiBold } from "@expo-google-fonts/poppins";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
+
+ErrorUtils.setGlobalHandler((error, isFatal) => {
+console.log("🔥 ERRO GLOBAL:", error);
+});
 
 SplashScreen.preventAutoHideAsync();
 
@@ -21,6 +25,7 @@ export default function App() {
     if (!fontsLoaded) { 
         return null;
     }
+
 
     return (
         <NavigationContainer>
