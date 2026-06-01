@@ -145,6 +145,8 @@ export async function deletaProduto(id){
             documento
         ));
 
+        console.log("OPAAAA CHEGUEI")
+
         return {
             success: true
         }

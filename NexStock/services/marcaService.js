@@ -113,7 +113,7 @@ export async function buscaMarcaId(id){
 
 export async function buscaMarcas() {
     try {
-        const snapshot = await getDoc(marcaRef);
+        const snapshot = await getDocs(marcaRef);
 
         const marcas = snapshot.docs.map(doc => ({
             documentoId: doc.id,

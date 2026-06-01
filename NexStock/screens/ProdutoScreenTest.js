@@ -8,6 +8,7 @@ import {
     escutaProdutos
 } from "../services/produtoService";
 import { ScrollView, View, StyleSheet, Text, Pressable, Button, Alert } from "react-native";
+import { doc } from "firebase/firestore/lite";
 
 export default function ProdutoScreenTest({
     navigation
@@ -36,7 +37,6 @@ export default function ProdutoScreenTest({
     }
 
     function deletar(docId) {
-
         Alert.alert(
             "Deletar produto",
             `Tem certeza que deseja excluir o produto?`,
@@ -48,20 +48,25 @@ export default function ProdutoScreenTest({
                 {
                     text: "Deletar",
                     style: "destructive",
-                    onPress: async () => {
-                        const response = await deletaProduto(docId);
-
-                        if (response.success){
-                            alert("Produto Deletado com sucesso")
-                        } else {
-                            alert(response.message)
-                        }
-                    }
+                    onPress: () => confirmaExclusaoProduto(docId)
 
                 }
             ]
         )
     }
+
+    async function confirmaExclusaoProduto(docId) {
+        console.log("Confirmou a exclusão")
+        const response = await deletaProduto(docId);
+
+        if (response.success){
+            Alert.alert("Sucesso", "Produto Excluido com sucesso");
+        } else {
+            Alert.alert("Erro", response.message)
+        }
+    }
+
+    console.log(produtos)
 
     useEffect(() => {
         const unsubscribe = escutaProdutos((dados) => {

@@ -17,11 +17,11 @@ import {
 
 import { COLLECTIONS } from "../database/collections";
 
-const umedRef = collection(db, COLLECTIONS.UNIDADES_MEDIDA);
+const tamRef = collection(db, COLLECTIONS.TAMANHOS);
 
-export function escutaUmeds(callback) {
+export function escutaTam(callback) {
     return onSnapshot(
-        umedRef,
+        tamRef,
         (snapshot) => {
             const lista = []
 
@@ -37,55 +37,55 @@ export function escutaUmeds(callback) {
     )
 }
 
-export async function addUmeds(umed) {
+export async function addTams(tam) {
     try {
         const q = query(
-            umedRef,
+            tamRef,
             orderBy("id","desc"),
             limit(1)
         )
 
-        const umeds = await getDocs(q)
+        const tams = await getDocs(q)
         
         let proximoId = 1;
 
-        if (!umeds.empty) {
-            const ultimaUmed = umeds.docs[0].data();
+        if (!tams.empty) {
+            const ultimaTam = tams.docs[0].data();
 
-            proximoId = ultimaUmed.id + 1;
+            proximoId = ultimaTam.id + 1;
         }
 
-        const novaUmed = `umed${proximoId}`;
+        const novoTam = `tamanho${proximoId}`;
 
         await setDoc(
-            doc(umedRef, novaUmed),
+            doc(tamRef, novoTam),
             {
                 id: proximoId,
-                ...umed
+                ...tam
             }
         )
 
         return {
             success: true,
-            id: novaUmed,
-            message: "Unidade de medida adicionada com sucesso!"
+            id: novoTam,
+            message: "Tamanho adicionado com sucesso!"
         }
 
     } catch (e) {
         return {
             success: false,
-            message: "Erro ao adicionar a unidade de medida: " + categ.nome,
+            message: "Erro ao adicionar um novo tamanho: " + categ.nome,
             error: e
         }
     }
 }
 
-export async function buscaUmedId(id){
+export async function buscaTamId(id){
    
    try {
 
         const q = query(
-            umedRef,
+            tamRef,
             where("id", "==", id)
         );
 
@@ -95,15 +95,15 @@ export async function buscaUmedId(id){
             return null
         }
 
-        const umed = snapshot.docs[0];
+        const tam = snapshot.docs[0];
 
         return {
-            ...umed.data()
+            ...tam.data()
         };
     } catch (error){
         return {
             success: false,
-            message: `Erro ao buscar o Unidade de medida ${id}`,
+            message: `Erro ao buscar o tamanho ${id}`,
             error: e 
         }
     }
@@ -111,34 +111,34 @@ export async function buscaUmedId(id){
 }
 
 
-export async function buscaUmeds() {
+export async function buscaTams() {
     try {
-        const snapshot = await getDocs(umedRef);
+        const snapshot = await getDocs(tamRef);
 
-        const umeds = snapshot.docs.map(doc => ({
+        const tams = snapshot.docs.map(doc => ({
             documentoId: doc.id,
             ...doc.data()
         }))
 
         return {
             success: true,
-            umeds
+            tams
         }
 
     } catch (e) {
         return {
             success: false,
-            message: "Erro ao buscar unidade de medidas",
+            message: "Erro ao buscar os tamanhos",
             error: e
         }
     }
 }
 
-export async function deletaUmeds(docId){
+export async function deletaTams(docId){
     try {
 
         await deleteDoc(doc(
-            umedRef,
+            tamRef,
             docId
         ));
 
@@ -149,18 +149,18 @@ export async function deletaUmeds(docId){
     } catch(e) {
         return {
             success: false,
-            message: "Erro ao deletar a unidade de medida: " + docId.toString(),
+            message: "Erro ao deletar o tamanho: " + docId.toString(),
             error: e
         }
     }
 }
 
-export async function alteraUmed(id, data){
+export async function alteraTam(id, data){
     try {
 
         let documento = id;
 
-        let docRef = doc(umedRef, documento)
+        let docRef = doc(tamRef, documento)
 
         const docSnap = await getDoc(docRef);
 
@@ -174,14 +174,14 @@ export async function alteraUmed(id, data){
         } else {
             return {
                 success: false,
-                message: "Unidade de medida não encontrada"
+                message: "Tamanho não encontrada"
             }
         }
 
     } catch(e) {
         return {
             success: false,
-            message: "Erro ao alterar a unidade de medida: " + id.toString(),
+            message: "Erro ao alterar o tamanho: " + id.toString(),
             error: e
         }
     }
