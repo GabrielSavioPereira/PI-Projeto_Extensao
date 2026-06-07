@@ -1,8 +1,12 @@
 import { View, Text, StyleSheet } from "react-native";
 import { createDrawerNavigator, DrawerContentScrollView, DrawerItemList } from "@react-navigation/drawer";
+import { Ionicons } from "@expo/vector-icons";
 
 import Header from "../components/Header";
 import BarraMenu from "../components/BarraMenu";
+import StackMarca from "./StackMarca";
+import StackFornecedor from "./StackFornecedor.js";
+import StackCliente from "./StackCliente";
 
 const Drawer = createDrawerNavigator();
 
@@ -45,7 +49,45 @@ export default function AppNavigator() {
                 },
             })}
         >
-            <Drawer.Screen name="InÃ­cio" component={BarraMenu} />
+            <Drawer.Screen
+                name="Início"
+                component={BarraMenu}
+                options={{
+                    drawerIcon: ({ color }) => (
+                        <Ionicons name="home-outline" size={20} color={color} />
+                    ),
+                }}
+            />
+
+            <Drawer.Screen
+                name="Marcas"
+                component={StackMarca}
+                options={{
+                    drawerIcon: ({ color }) => (
+                        <Ionicons name="pricetag-outline" size={20} color={color} />
+                    ),
+                }}
+            />
+
+            <Drawer.Screen
+                name="Fornecedores"
+                component={StackFornecedor}
+                options={{
+                    drawerIcon: ({ color }) => (
+                        <Ionicons name="business-outline" size={20} color={color} />
+                    ),
+                }}
+            />
+
+            <Drawer.Screen
+                name="Clientes"
+                component={StackCliente}
+                options={{
+                    drawerIcon: ({ color }) => (
+                        <Ionicons name="people-outline" size={20} color={color} />
+                    ),
+                }}
+            />
         </Drawer.Navigator>
     );
 }
