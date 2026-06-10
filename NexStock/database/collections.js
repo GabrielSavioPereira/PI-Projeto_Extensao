@@ -4,5 +4,6 @@ export const COLLECTIONS = {
     CATEGORIAS: "categorias",
     UNIDADES_MEDIDA: "unidades_medida",
     FORNECEDORES: "fornecedores",
-    CLIENTES: "clientes"
+    CLIENTES: "clientes",
+    CONDPAG: 'condpag'
 }
