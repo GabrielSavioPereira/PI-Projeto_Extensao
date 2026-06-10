@@ -3,7 +3,7 @@ import {
     buscaMarcas,
     deletaMarca,
     escutaMarcas
-} from "../services/marcaService";
+} from "../services/MarcaService";
 import { ScrollView, View, StyleSheet, Text, Pressable, Button, Alert } from "react-native";
 
 export default function MarcaScreenTest({

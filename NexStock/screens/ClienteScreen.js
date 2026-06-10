@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, ScrollView, Alert, StyleSheet } from "react-native";
-import { deletaCliente, escutaClientes } from "../services/clienteService";
+import { deletaCliente, escutaClientes } from "../services/ClienteService";
 import {
     ScreenContainer,
     Header,
@@ -39,7 +39,7 @@ export default function ClienteScreen({ navigation }) {
                     onPress: async () => {
                         const response = await deletaCliente(docId);
                         if (response.success) {
-                            Alert.alert("Sucesso", "Cliente excluído com sucesso!");
+                            Alert.alert("Sucesso", "Cliente excluï¿½do com sucesso!");
                         } else {
                             Alert.alert("Erro", response.message);
                         }

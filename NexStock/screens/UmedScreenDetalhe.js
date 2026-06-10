@@ -7,7 +7,7 @@ import {
 
 import {use, useEffect, useState} from "react"
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
-import { addUmeds, alteraUmed } from "../services/unmedidaService";
+import { addUmeds, alteraUmed } from "../services/UnmedidaService";
 
 export default function UmedScreenDetalhe({
     route

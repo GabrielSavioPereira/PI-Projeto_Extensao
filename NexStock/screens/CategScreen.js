@@ -3,7 +3,7 @@ import {
     buscaCateg,
     deletaCateg,
     escutaCategs
-} from "../services/categoriaService";
+} from "../services/CategoriaService";
 import { ScrollView, View, StyleSheet, Text, Pressable, Button, Alert } from "react-native";
 
 export default function CategScreen({
