@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Alert } from 'react-native'; // Adicionado Alert
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Alert } from 'react-native';
 import { Ionicons, Feather } from '@expo/vector-icons';
-import { signInWithEmailAndPassword } from "firebase/auth"; 
 import { auth } from '../dbconfig/config.js'; 
+import { signInWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth";
 
 export default function Login({ navigation }) {
   
@@ -15,11 +15,9 @@ export default function Login({ navigation }) {
       Alert.alert("Erro", "Por favor, preencha todos os campos.");
       return;
     }
-
     signInWithEmailAndPassword(auth, email, senha)
-      .then((userCredential) => {
-        Alert.alert("Sucesso", "Bem-vindo ao NexStock!");
-        navigation.navigate('HomeScreen'); 
+      .then(() => {
+        navigation.replace('App');
       })
       .catch((error) => {
         let errorMessage = "Erro ao tentar entrar.";
@@ -27,15 +25,32 @@ export default function Login({ navigation }) {
         if (error.code === 'auth/user-not-found') errorMessage = "Usuário não encontrado.";
         if (error.code === 'auth/wrong-password') errorMessage = "Senha incorreta.";
         if (error.code === 'auth/invalid-credential') errorMessage = "Credenciais inválidas.";
-        
         Alert.alert("Erro", errorMessage);
         console.log(error.code);
       });
   };
 
+  const handleEsqueciSenha = () => {
+  if (email === '') {
+    Alert.alert("Atenção", "Digite seu e-mail no campo acima primeiro.");
+    return;
+  }
+  sendPasswordResetEmail(auth, email)
+    .then(() => {
+      Alert.alert("E-mail enviado", "Verifique sua caixa de entrada para redefinir a senha.");
+    })
+    .catch((err) => {  // ← troque 'error' por 'err'
+      console.log(err.code);
+      let errorMessage = "Erro ao enviar e-mail.";
+      if (err.code === 'auth/invalid-email') errorMessage = "E-mail inválido.";
+      if (err.code === 'auth/user-not-found') errorMessage = "Nenhuma conta encontrada com esse e-mail.";
+      Alert.alert("Erro", errorMessage);
+    });
+};
+
   return (
     <View style={styles.container}>
-        <View style={styles.topContainer}>
+      <View style={styles.topContainer}>
         <Image
           source={require('../assets/logoLogin.png')} 
           style={styles.logo}
@@ -45,16 +60,15 @@ export default function Login({ navigation }) {
         <View style={styles.inputContainer}>
           <Feather name="mail" size={20} color="#C45F7D" />
           <TextInput
-          placeholder="Usuário"
-          placeholderTextColor="#C45F7D"
-          style={styles.input}
-          value={email}
-          onChangeText={setEmail}
-          autoCapitalize="none"/>
+            placeholder="Usuário"
+            placeholderTextColor="#C45F7D"
+            style={styles.input}
+            value={email}
+            onChangeText={setEmail}
+            autoCapitalize="none"/>
         </View>
         <View style={styles.inputContainer}>
           <Feather name="lock" size={20} color="#C45F7D" />
-          
           <TextInput
             placeholder="Senha"
             placeholderTextColor="#C45F7D"
@@ -62,9 +76,7 @@ export default function Login({ navigation }) {
             style={styles.input}
             value={senha}
             onChangeText={setSenha}/>
-
-          <TouchableOpacity
-            onPress={() => setSenhaVisivel(!senhaVisivel)}>
+          <TouchableOpacity onPress={() => setSenhaVisivel(!senhaVisivel)}>
             <Ionicons
               name={senhaVisivel ? 'eye' : 'eye-off'}
               size={22}
@@ -72,48 +84,30 @@ export default function Login({ navigation }) {
           </TouchableOpacity>
         </View>
         <TouchableOpacity 
-        style={styles.button}
-        onPress={handleLogin}>
+          style={styles.button}
+          onPress={handleLogin}>
           <Text style={styles.buttonText}>Entrar</Text>
         </TouchableOpacity>
-
-        <TouchableOpacity>
-          <Text style={styles.forgot}>
-            Esqueci minha senha
-          </Text>
+        <TouchableOpacity onPress={handleEsqueciSenha}>
+          <Text style={styles.forgot}>Esqueci minha senha</Text>
         </TouchableOpacity>
       </View>
     </View>
   );
 }
 
-
-
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F4F4F4',
-  },
-
+  container: { flex: 1, backgroundColor: '#F4F4F4' },
   topContainer: {
     height: 300,
     backgroundColor: '#E9C1B9',
     borderBottomLeftRadius: 30,
-    borderBottomRightRadius:30,
+    borderBottomRightRadius: 30,
     justifyContent: 'center',
     alignItems: 'center',
   },
-
-  logo: {
-    width: 250,
-    height: 180,
-  },
-
-  formContainer: {
-    paddingHorizontal: 35,
-    marginTop: 60,
-  },
-
+  logo: { width: 250, height: 180 },
+  formContainer: { paddingHorizontal: 35, marginTop: 60 },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -122,14 +116,7 @@ const styles = StyleSheet.create({
     marginBottom: 30,
     paddingBottom: 8,
   },
-
-  input: {
-    flex: 1,
-    marginLeft: 10,
-    color: '#C45F7D',
-    fontSize: 16,
-  },
-
+  input: { flex: 1, marginLeft: 10, color: '#C45F7D', fontSize: 16 },
   button: {
     backgroundColor: '#C45F7D',
     height: 50,
@@ -137,23 +124,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 10,
-
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 3,
-    },
+    shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
     elevation: 5,
   },
-
-  buttonText: {
-    color: '#FFF',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-
+  buttonText: { color: '#FFF', fontSize: 18, fontWeight: 'bold' },
   forgot: {
     textAlign: 'center',
     color: '#C45F7D',
