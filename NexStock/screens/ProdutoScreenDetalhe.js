@@ -4,17 +4,22 @@ import {
     Text,
     StyleSheet,
     TextInput,
-    Button
+    Button,
+    Alert
 
 } from "react-native";
 
 import {use, useEffect, useState} from "react"
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { Picker } from "@react-native-picker/picker"
-import { addProduto, alteraProduto } from "../services/produtoService";
+import { addProduto, alteraProduto } from "../services/ProdutoService";
+import { buscaMarcas } from "../services/MarcaService";
+import { buscaCategs } from "../services/CategoriaService";
+import { buscaUmeds } from "../services/UnmedidaService";
 
 export default function ProdutoDetalheScreen({
-    route
+    route,
+    navigation
 }) {
 
     const produto = route.params?.produto;
@@ -29,26 +34,44 @@ export default function ProdutoDetalheScreen({
     const [marca, setMarca]    = useState();
     const [unidades, setUnidades] = useState([]);
     const [unidade, setUnidade] = useState();
+    
+    async function listaMarcas() {
+        const response = await buscaMarcas();
 
-    async function listaCategorias() {
-        setCategorias([
-            {id: 1, nome: "Vestidos"},
-            {id: 0, nome: "Exemplo"}
-        ])
+        if (response.success) {
+            setMarcas(
+                response.marcas
+            )
+        }
+        
+        console.log("Marcas: ")
+        console.log(response.marcas)
     }
 
-    async function listaMarcas() {
-        setMarcas([
-            {id: 1, nome: "Damyler"},
-            {id: 0, nome: "Marca Exemplo"}
-        ])
+    async function  listaCategorias() {
+            const response = await buscaCategs();
+        
+            if(response.success){
+                setCategorias(
+                    response.categs
+                )
+            }
+            console.log("Categorias: ")
+            console.log(response.categs)
     }
 
     async function listaUnidades() {
-        setUnidades([
-            {id: 1, nome: "UN"},
-            {id: 0, nome: "Unidade Exemplo"}
-        ])
+        const response = await buscaUmeds();
+
+        if(response.success) {
+            setUnidades(
+                response.umeds
+            )
+        }
+
+        console.log("Unidade de medida: ")
+        console.log(response.umeds)
+        
     }
 
     async function  salvar() {
@@ -74,7 +97,11 @@ export default function ProdutoDetalheScreen({
             const response = await addProduto(objProduto);
 
             if (response.success) {
-                alert("Produto adicionado com sucesso!")
+                Alert.alert(
+                    "Sucesso",
+                    "Produto adicionado com sucesso!",
+                    [{ text:"OK", onPress: () => navigation.goBack()}]
+                )
             } else {
                 alert(response.message)
             }
@@ -140,6 +167,7 @@ export default function ProdutoDetalheScreen({
                 <Picker.Item label="Selecione uma categoria..." value="" />
                 {
                     categorias.map((item) => (
+                        
                         <Picker.Item 
                             key={item.id}
                             label={item.nome}

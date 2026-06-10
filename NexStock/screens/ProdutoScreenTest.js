@@ -6,8 +6,10 @@ import {
     alteraProduto,
     deletaProduto,
     escutaProdutos
-} from "../services/produtoService";
+} from "../services/ProdutoService";
 import { ScrollView, View, StyleSheet, Text, Pressable, Button, Alert } from "react-native";
+import { doc } from "firebase/firestore/lite";
+import { FAB, ScreenContainer, Card, theme, SearchBar, EmptyState } from "../components/ui";
 
 export default function ProdutoScreenTest({
     navigation
@@ -19,9 +21,11 @@ export default function ProdutoScreenTest({
     const [categoria_id, setCategoriaId] = useState();
     const [marca_id, setMarcaId] = useState();
     const [unidade_id, setUnidadeId] = useState();
+    const [busca, setBusca] = useState("");
 
     const [produtos, setProdutos] = useState([]);
 
+    
     async function  fbuscaProdutos() {
         const response = await buscaProdutos();
 
@@ -30,13 +34,12 @@ export default function ProdutoScreenTest({
                 response.produtos
             )
         }
-
+        
         console.log(response)
         console.log("opa")
     }
-
+    
     function deletar(docId) {
-
         Alert.alert(
             "Deletar produto",
             `Tem certeza que deseja excluir o produto?`,
@@ -48,88 +51,104 @@ export default function ProdutoScreenTest({
                 {
                     text: "Deletar",
                     style: "destructive",
-                    onPress: async () => {
-                        const response = await deletaProduto(docId);
-
-                        if (response.success){
-                            alert("Produto Deletado com sucesso")
-                        } else {
-                            alert(response.message)
-                        }
-                    }
+                    onPress: () => confirmaExclusaoProduto(docId)
 
                 }
             ]
         )
     }
 
+    async function confirmaExclusaoProduto(docId) {
+        console.log("Confirmou a exclusão")
+        const response = await deletaProduto(docId);
+        
+        if (response.success){
+            Alert.alert("Sucesso", "Produto Excluido com sucesso");
+        } else {
+            Alert.alert("Erro", response.message)
+        }
+    }
+    
     useEffect(() => {
         const unsubscribe = escutaProdutos((dados) => {
             setProdutos(dados);
         });
-
+        
         return () => unsubscribe();
     },[])
+    
+    console.log(busca)
+    const produtos_filtrados = produtos.filter(
+        (p) =>
+            p.nome?.toLowerCase().includes(busca.toLowerCase()) ||
+            p.codigo?.includes(busca)  
+    )
+    console.log(produtos_filtrados)
 
     return (
-        <ScrollView
-            style={styles.container}
-        >   
+        <ScreenContainer>
 
-            <Text style={styles.title}>
-                Teste Produtos
-            </Text>
-
-            <Pressable
-                onPress={() => navigation.navigate("ProdutoDetalhe")}
-            >
-                <Text>
-                    + NOVO PRODUTO
+                <Text style={styles.title}>
+                    Teste Produtos
                 </Text>
-            </Pressable>
 
-            <View style={{marginTop: 20}}>
-                {
-                    produtos.map(produto => (
-                        <Pressable
+            <SearchBar
+                value={busca}
+                onChangeText={setBusca}
+                placeholder="Informe o nome ou o código do produto"
+                />
+
+            <ScrollView
+                style={styles.container}
+            >   
+                <View style={styles.cardInfo}>
+                    { produtos_filtrados.length === 0 ? (
+                        <EmptyState
+                            icone="business-outline"
+                            mensagem="Nenhum produto encontrado"
+                        />
+                    ) : (
+                        produtos_filtrados.map(produto => (
+                            <Card
                             key={produto.id}
-                            style={styles.card}
+                            style={styles.cardRow}
                             onPress={() => navigation.navigate(
                                 "ProdutoDetalhe",
-                                {
-                                    produto
-                                }
-                            )}
-                        >
-                            <View>
+                                    {
+                                        produto
+                                    }
+                                )}
+                            >
+                                <View>
 
-                            <Text style={styles.cardTitle}>
-                                {produto.nome}
-                            </Text>
+                                <Text style={styles.cardTitle}>
+                                    {produto.nome}
+                                </Text>
 
-                            <Text style={styles.cardText}>
-                                Código: {produto.codigo}
-                            </Text>
+                                <Text style={styles.cardText}>
+                                    Código: {produto.codigo}
+                                </Text>
 
-                            <Text style={styles.cardText}>
-                                Preço de Custo: R$ {produto.preco_custo}
-                            </Text>
+                                <Text style={styles.cardText}>
+                                    Preço de Custo: R$ {produto.preco_custo}
+                                </Text>
 
-                            <Text style={styles.cardText}>
-                                Preço de Venda: R$ {produto.preco_venda}
-                            </Text>
-                            </View>
+                                <Text style={styles.cardText}>
+                                    Preço de Venda: R$ {produto.preco_venda}
+                                </Text>
+                                </View>
 
-                            <Button
-                                title="Deletar"
-                                onPress={() => deletar(produto.documentoId)}
-                            />
-                        </Pressable>
-                    ))
-                }
-            </View>
-
-        </ScrollView>
+                                <Button
+                                    title="Deletar"
+                                    onPress={() => deletar(produto.documentoId)}
+                                    />
+                            </Card>
+                        ))
+                    )}
+                </View>
+            </ScrollView>
+            <FAB onPress={() => navigation.navigate("ProdutoDetalhe")} />
+        </ScreenContainer>
     );
 
 }
@@ -149,52 +168,22 @@ const styles = StyleSheet.create({
         marginBottom: 20,
         textAlign: "center"
     },
-    input: {
-        backgroundColor: "white",
-        borderWidth: 1,
-        borderColor: "#ccc",
-        borderRadius: 8,
-        padding: 12,
-        marginBottom: 12
-    },
-
-    buttonContainer: {
-        marginBottom: 10
-    },
-
-    card: {
-        backgroundColor: "white",
-        borderRadius: 10,
-        padding: 15,
-        marginBottom: 15,
-        elevation: 3,
-        shadowColor: "#000",
-        shadowOffset: {
-            width: 0,
-            height: 2
+    cardRow: {
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 14,
         },
-        shadowOpacity: 0.2,
-        shadowRadius: 4
-    },
-
-    cardTitle: {
-        fontSize: 18,
-        fontWeight: "bold",
-        marginBottom: 8
-    },
-
-    cardText: {
-        fontSize: 15,
-        marginBottom: 5
-    },
-
-    actions: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        marginTop: 15
-    },
-
-    actionButton: {
-        width: "48%"
-    }
+        cardInfo: { flex: 1 },
+        cardNome: {
+            fontFamily: theme.fonts.semiBold,
+            fontSize: 16,
+            color: theme.colors.text,
+            marginBottom: 2,
+        },
+        cardDetalhe: {
+            fontFamily: theme.fonts.regular,
+            fontSize: 13,
+            color: theme.colors.muted,
+            marginTop: 1,
+        }
 });
