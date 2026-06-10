@@ -4,20 +4,22 @@ import {
     Text,
     StyleSheet,
     TextInput,
-    Button
+    Button,
+    Alert
 
 } from "react-native";
 
 import {use, useEffect, useState} from "react"
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { Picker } from "@react-native-picker/picker"
-import { addProduto, alteraProduto } from "../services/produtoService";
-import { buscaMarcas } from "../services/marcaService";
-import { buscaCategs } from "../services/categoriaService";
-import { buscaUmeds } from "../services/unmedidaService";
+import { addProduto, alteraProduto } from "../services/ProdutoService";
+import { buscaMarcas } from "../services/MarcaService";
+import { buscaCategs } from "../services/CategoriaService";
+import { buscaUmeds } from "../services/UnmedidaService";
 
 export default function ProdutoDetalheScreen({
-    route
+    route,
+    navigation
 }) {
 
     const produto = route.params?.produto;
@@ -95,7 +97,11 @@ export default function ProdutoDetalheScreen({
             const response = await addProduto(objProduto);
 
             if (response.success) {
-                alert("Produto adicionado com sucesso!")
+                Alert.alert(
+                    "Sucesso",
+                    "Produto adicionado com sucesso!",
+                    [{ text:"OK", onPress: () => navigation.goBack()}]
+                )
             } else {
                 alert(response.message)
             }

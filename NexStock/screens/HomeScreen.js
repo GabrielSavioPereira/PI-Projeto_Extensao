@@ -1,6 +1,6 @@
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from "react-native";
 import { useEffect, useState } from "react";
-import { escutaProdutos } from "../services/produtoService";
+import { escutaProdutos } from "../services/ProdutoService";
 import {
     ScreenContainer,
     Loading,

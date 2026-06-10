@@ -3,7 +3,7 @@ import {
     buscaUmeds,
     deletaUmeds,
     escutaUmeds
-} from "../services/unmedidaService";
+} from "../services/UnmedidaService";
 import { ScrollView, View, StyleSheet, Text, Pressable, Button, Alert } from "react-native";
 
 export default function UmedScreen({

@@ -6,6 +6,7 @@ import StackProdutos from "../navigation/StackProdutos";
 import ProdutoScreenDetalhe from "../screens/ProdutoScreenDetalhe";
 import StackMarca from "../navigation/StackMarca";
 import StackCateg from "../navigation/StackCateg";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const Tab = createBottomTabNavigator();
 
@@ -39,7 +40,7 @@ export default function BarraMenu() {
                     paddingTop: 6,
                 },
             })}
-        >
+            >
             <Tab.Screen name="Home" component={HomeScreen} />
             <Tab.Screen name="Produtos" component={StackProdutos} />
             <Tab.Screen name="Marca" component={StackMarca} />

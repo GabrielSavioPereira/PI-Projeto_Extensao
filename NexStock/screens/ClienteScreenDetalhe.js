@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { ScrollView, Alert, StyleSheet } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
-import { addCliente, alteraCliente } from "../services/clienteService";
+import { addCliente, alteraCliente } from "../services/ClienteService";
 import {
     Header,
     Avatar,
@@ -58,7 +58,7 @@ export default function ClienteScreenDetalhe({ route, navigation }) {
 
     function validar() {
         if (!nome.trim()) {
-            Alert.alert("Atenção", "O nome do cliente é obrigatório.");
+            Alert.alert("Atenï¿½ï¿½o", "O nome do cliente ï¿½ obrigatï¿½rio.");
             return false;
         }
         return true;
@@ -111,8 +111,8 @@ export default function ClienteScreenDetalhe({ route, navigation }) {
                     {/* Avatar preview */}
                     <Avatar nome={nome} size={72} style={styles.avatar} />
 
-                    {/* Identificação */}
-                    <SectionLabel titulo="Identificação" icone="person-outline" />
+                    {/* Identificaï¿½ï¿½o */}
+                    <SectionLabel titulo="Identificaï¿½ï¿½o" icone="person-outline" />
                     <FormField
                         label="Nome completo *"
                         value={nome}
@@ -153,27 +153,27 @@ export default function ClienteScreenDetalhe({ route, navigation }) {
                         autoCapitalize="none"
                     />
 
-                    {/* Endereço */}
-                    <SectionLabel titulo="Endereço" icone="location-outline" />
+                    {/* Endereï¿½o */}
+                    <SectionLabel titulo="Endereï¿½o" icone="location-outline" />
                     <FormField
-                        label="Endereço"
+                        label="Endereï¿½o"
                         value={endereco}
                         onChangeText={setEndereco}
-                        placeholder="Rua, número, bairro, cidade"
+                        placeholder="Rua, nï¿½mero, bairro, cidade"
                     />
 
-                    {/* Observações */}
-                    <SectionLabel titulo="Observações" icone="document-text-outline" />
+                    {/* Observaï¿½ï¿½es */}
+                    <SectionLabel titulo="Observaï¿½ï¿½es" icone="document-text-outline" />
                     <FormField
-                        label="Observações"
+                        label="Observaï¿½ï¿½es"
                         value={observacao}
                         onChangeText={setObservacao}
-                        placeholder="Informações adicionais sobre o cliente..."
+                        placeholder="Informaï¿½ï¿½es adicionais sobre o cliente..."
                         multiline
                     />
 
                     <PrimaryButton
-                        title={editando ? "Salvar alterações" : "Cadastrar cliente"}
+                        title={editando ? "Salvar alteraï¿½ï¿½es" : "Cadastrar cliente"}
                         icone={editando ? "checkmark-circle-outline" : "save-outline"}
                         onPress={salvar}
                         loading={salvando}

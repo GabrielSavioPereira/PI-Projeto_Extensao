@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, ScrollView, Alert, StyleSheet } from "react-native";
 
-import { deletaFornecedor, escutaFornecedores } from "../services/fornecedorService";
+import { deletaFornecedor, escutaFornecedores } from "../services/FornecedorService";
 import {
     ScreenContainer,
     Header,
@@ -28,6 +28,7 @@ export default function FornecedorScreen({ navigation }) {
         return () => unsubscribe();
     }, []);
 
+
     function deletar(docId, nome) {
         Alert.alert(
             "Excluir Fornecedor",
@@ -40,7 +41,7 @@ export default function FornecedorScreen({ navigation }) {
                     onPress: async () => {
                         const response = await deletaFornecedor(docId);
                         if (response.success) {
-                            Alert.alert("Sucesso", "Fornecedor excluído com sucesso!");
+                            Alert.alert("Sucesso", "Fornecedor excluï¿½do com sucesso!");
                         } else {
                             Alert.alert("Erro", response.message);
                         }

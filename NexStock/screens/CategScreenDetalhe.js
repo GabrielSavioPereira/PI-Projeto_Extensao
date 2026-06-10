@@ -7,7 +7,7 @@ import {
 
 import {use, useEffect, useState} from "react"
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
-import { addCateg, alteraCateg } from "../services/categoriaService";
+import { addCateg, alteraCateg } from "../services/CategoriaService";
 
 export default function CategScreenDetalhe({
     route

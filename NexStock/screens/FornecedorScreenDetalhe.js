@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { ScrollView, Alert, StyleSheet } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 
-import { addFornecedor, alteraFornecedor } from "../services/fornecedorService";
+import { addFornecedor, alteraFornecedor } from "../services/FornecedorService";
 import {
     Header,
     Avatar,
@@ -69,11 +69,11 @@ export default function FornecedorScreenDetalhe({ route, navigation }) {
 
     function validar() {
         if (!nome.trim()) {
-            Alert.alert("Atenção", "O nome do fornecedor é obrigatório.");
+            Alert.alert("AtenÃ§Ã£o", "O nome do fornecedor o obrigatÃ³rio.");
             return false;
         }
         if (!cpf && !cnpj) {
-            Alert.alert("Atenção", "Informe ao menos CPF ou CNPJ.");
+            Alert.alert("AtenÃ§Ã£o", "Informe ao menos CPF ou CNPJ.");
             return false;
         }
         return true;
@@ -118,13 +118,13 @@ export default function FornecedorScreenDetalhe({ route, navigation }) {
                     {/* Avatar preview */}
                     <Avatar nome={nome} size={72} style={styles.avatar} />
 
-                    {/* Identificação */}
-                    <SectionLabel titulo="Identificação" icone="person-outline" />
+                    {/* Identificaï¿½ï¿½o */}
+                    <SectionLabel titulo="IdentificaÃ§Ã£o" icone="person-outline" />
                     <FormField
-                        label="Nome completo / Razão social *"
+                        label="Nome completo / RazÃ£o social *"
                         value={nome}
                         onChangeText={setNome}
-                        placeholder="Ex: João Silva"
+                        placeholder="Ex: JoÃ£o Silva"
                         autoCapitalize="words"
                     />
                     <FormField
@@ -142,7 +142,7 @@ export default function FornecedorScreenDetalhe({ route, navigation }) {
                         keyboardType="numeric"
                     />
                     <FormField
-                        label="Data de início do fornecimento"
+                        label="Data de inÃ­cio do fornecimento"
                         value={dataInicio}
                         onChangeText={(t) => setDataInicio(formatarData(t))}
                         placeholder="DD/MM/AAAA"
@@ -167,27 +167,27 @@ export default function FornecedorScreenDetalhe({ route, navigation }) {
                         autoCapitalize="none"
                     />
 
-                    {/* Endereço */}
-                    <SectionLabel titulo="Endereço" icone="location-outline" />
+                    {/* Endereï¿½o */}
+                    <SectionLabel titulo="EndereÃ§o" icone="location-outline" />
                     <FormField
-                        label="Endereço"
+                        label="EndereÃ§o"
                         value={endereco}
                         onChangeText={setEndereco}
-                        placeholder="Rua, número, bairro, cidade"
+                        placeholder="Rua, nÃºmero, bairro, cidade"
                     />
 
-                    {/* Observações */}
-                    <SectionLabel titulo="Observações" icone="document-text-outline" />
+                    {/* Observaï¿½ï¿½es */}
+                    <SectionLabel titulo="ObservaÃ§Ãµes" icone="document-text-outline" />
                     <FormField
-                        label="Observações"
+                        label="Observaï¿½ï¿½es"
                         value={observacao}
                         onChangeText={setObservacao}
-                        placeholder="Informações adicionais..."
+                        placeholder="InformaÃ§Ãµes adicionais..."
                         multiline
                     />
 
                     <PrimaryButton
-                        title={editando ? "Salvar alterações" : "Cadastrar fornecedor"}
+                        title={editando ? "Salvar alteraÃ§Ãµes" : "Cadastrar fornecedor"}
                         icone={editando ? "checkmark-circle-outline" : "save-outline"}
                         onPress={salvar}
                         loading={salvando}
