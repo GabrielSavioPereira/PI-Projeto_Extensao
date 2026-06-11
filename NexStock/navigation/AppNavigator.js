@@ -5,13 +5,14 @@ import {
     DrawerItem
 } from "@react-navigation/drawer";
 import { Ionicons } from "@expo/vector-icons";
-
+import Login from "../screens/LoginScreen.js"
 import Header from "../components/Header";
 import BarraMenu from "../components/BarraMenu";
 import StackMarca from "./StackMarca";
 import StackFornecedor from "./StackFornecedor.js";
 import StackCliente from "./StackCliente";
 import StackProdutos from "./StackProdutos.js";
+import StackCondPag from "./StackCondPag";
 import { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -129,6 +130,16 @@ function CustomDrawerContent(props) {
                     <Ionicons name="people-outline" size={20} color={color} />
                 )}
             />
+            <DrawerItem
+                label="Cond. Pagamento"
+                onPress={() => {
+                    props.navigation.navigate("Condição Pagamento");
+                    props.navigation.closeDrawer();
+                }}
+                icon={({ color }) => (
+                    <Ionicons name="card-outline" size={20} color={color} />
+                )}
+            />
 
         </DrawerContentScrollView>
     );
@@ -182,12 +193,18 @@ export default function AppNavigator() {
             />
 
             <Drawer.Screen
+                name="Condição Pagamento"
+                component={StackCondPag}
+            />
+            <Drawer.Screen
                 name="Produtos"
                 component={StackProdutos}
                 options={{
                     drawerItemStyle: { display: "none" } // esconde do menu automático
                 }}
             />
+
+            
         </Drawer.Navigator>
         </SafeAreaView>
     );

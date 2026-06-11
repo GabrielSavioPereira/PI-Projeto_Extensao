@@ -7,4 +7,5 @@ export const COLLECTIONS = {
     CLIENTES: "clientes",
     MOV_ESTOQUE: "movimentacoes_estoque",
     SAL_VARIACOES: "saldo_variacoes"
+    CONDPAG: 'condpag'
 }

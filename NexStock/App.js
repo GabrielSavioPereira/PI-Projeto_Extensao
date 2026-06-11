@@ -1,9 +1,9 @@
 import 'react-native-gesture-handler';
 import { NavigationContainer } from "@react-navigation/native";
-import AppNavigator from "./navigation/AppNavigator";
 import { useFonts, Poppins_400Regular, Poppins_500Medium, Poppins_600SemiBold } from "@expo-google-fonts/poppins";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
+import RootNavigator from './navigation/RootNavigator';
 
 ErrorUtils.setGlobalHandler((error, isFatal) => {
 console.log("🔥 ERRO GLOBAL:", error);
@@ -28,8 +28,9 @@ export default function App() {
 
 
     return (
+        
         <NavigationContainer>
-            <AppNavigator />
+            <RootNavigator />
         </NavigationContainer>
     );
 };
