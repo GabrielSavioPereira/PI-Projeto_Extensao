@@ -15,7 +15,7 @@ import { Picker } from "@react-native-picker/picker"
 import { addProduto, alteraProduto } from "../services/ProdutoService";
 import { buscaMarcas } from "../services/MarcaService";
 import { buscaCategs } from "../services/CategoriaService";
-import { buscaUmeds } from "../services/UnmedidaService";
+import { buscaUmeds } from "../services/UnmedidaService"
 
 export default function ProdutoDetalheScreen({
     route,

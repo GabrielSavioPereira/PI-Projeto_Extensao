@@ -101,6 +101,7 @@ export async function buscaVariacaoId(id){
         const variacao = snapshot.docs[0];
 
         return {
+            success: true,
             ...variacao.data()
         };
     } catch (error){
