@@ -8,7 +8,7 @@ const Stack = createStackNavigator();
 export default function RootNavigator() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="Login" component={LoginScreen} />
+      {/* <Stack.Screen name="Login" component={LoginScreen} /> */}
       <Stack.Screen name="App" component={AppNavigator} />
     </Stack.Navigator>
   );

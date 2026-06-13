@@ -3,7 +3,7 @@ import { Ionicons } from "@expo/vector-icons";
 
 import HomeScreen from "../screens/HomeScreen";
 import StackProdutos from "../navigation/StackProdutos";
-import ProdutoScreenDetalhe from "../screens/ProdutoScreenDetalhe";
+import ProdutoListScreen from "../screens/ProdutoListScreen";
 import StackMarca from "../navigation/StackMarca";
 import StackCateg from "../navigation/StackCateg";
 import { SafeAreaView } from "react-native-safe-area-context";
