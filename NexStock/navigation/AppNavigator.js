@@ -8,13 +8,20 @@ import { Ionicons } from "@expo/vector-icons";
 import Login from "../screens/LoginScreen.js"
 import Header from "../components/Header";
 import BarraMenu from "../components/BarraMenu";
-import StackMarca from "./StackMarca";
 import StackFornecedor from "./StackFornecedor.js";
 import StackCliente from "./StackCliente";
 import StackProdutos from "./StackProdutos.js";
 import StackCondPag from "./StackCondPag";
+import MovStockScreen from "../screens/MovStockScreen.js"
+import SaldoVariacaoEstoque from "../screens/SaldoVariacaoScreen.js"
+import ProdutoVariacao from "../screens/ProdutoVariacaoScreen.js"
 import { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
+import StackCateg from "./StackCateg.js";
+import StackMarca from "./StackMarca";
+import StackTamanho from "./StackTamanho.js"
+import StackUnidade from "./StackUnidade.js"
+import StackCores from "./StackCores.js"
 
 const Drawer = createDrawerNavigator();
 
@@ -84,30 +91,50 @@ function CustomDrawerContent(props) {
                     />
 
                     <DrawerItem
-                        label="Variações"
-                        onPress={() => {
-                            props.navigation.navigate("Produtos", {
-                                screen: "Variacoes"
-                            });
-                            setOpenProdutos(false);
-                            props.navigation.closeDrawer();
-                        }}
-                    />
+                    label="Marcas"
+                    onPress={() => {
+                        props.navigation.navigate("Marcas");
+                        props.navigation.closeDrawer();
+                    }}
+                    
+                />
 
+                <DrawerItem
+                    label="Tamanhos"
+                    onPress={() => {
+                        props.navigation.navigate("Tamanhos");
+                        props.navigation.closeDrawer();
+                    }}
+                    
+                />
+
+                <DrawerItem
+                    label="Cores"
+                    onPress={() => {
+                        props.navigation.navigate("Cores");
+                        props.navigation.closeDrawer();
+                    }}
+                />
+
+                <DrawerItem
+                    label="Unidades De Medidas"
+                    onPress={() => {
+                        props.navigation.navigate("Unidades");
+                        props.navigation.closeDrawer();
+                    }}
+                />
+
+                <DrawerItem
+                    label="Categorias"
+                    onPress={() => {
+                        props.navigation.navigate("Categorias");
+                        props.navigation.closeDrawer();
+                    }}
+                />
                 </View>
             )}
 
             {/* OUTROS */}
-            <DrawerItem
-                label="Marcas"
-                onPress={() => {
-                    props.navigation.navigate("Marcas");
-                    props.navigation.closeDrawer();
-                }}
-                icon={({ color }) => (
-                    <Ionicons name="pricetag-outline" size={20} color={color} />
-                )}
-            />
 
             <DrawerItem
                 label="Fornecedores"
@@ -141,6 +168,30 @@ function CustomDrawerContent(props) {
                 )}
             />
 
+            <DrawerItem
+                label="Movimentações de Estoque"
+                onPress={() => {
+                    props.navigation.navigate("MovimentacaoEstoque");
+                    props.navigation.closeDrawer();
+                }}
+                icon={({ color }) => (
+                    <Ionicons name="card-outline" size={20} color={color} />
+                )}
+            />
+
+            <DrawerItem
+                label="Saldo das Variações no estoque"
+                onPress={() => {
+                    props.navigation.navigate("SaldoVariacao");
+                    props.navigation.closeDrawer();
+                }}
+                icon={({ color }) => (
+                    <Ionicons name="card-outline" size={20} color={color} />
+                )}
+            />
+
+            
+            
         </DrawerContentScrollView>
     );
 }
@@ -183,6 +234,25 @@ export default function AppNavigator() {
             />
 
             <Drawer.Screen
+                name="Tamanhos"
+                component={StackTamanho}
+            />
+
+            <Drawer.Screen
+                name="Unidades"
+                component={StackUnidade}
+            />
+
+            <Drawer.Screen
+                name="Categorias"
+                component={StackCateg}
+            />
+            <Drawer.Screen
+                name="Cores"
+                component={StackCores}
+            />
+
+            <Drawer.Screen
                 name="Fornecedores"
                 component={StackFornecedor}
             />
@@ -202,6 +272,21 @@ export default function AppNavigator() {
                 options={{
                     drawerItemStyle: { display: "none" } // esconde do menu automático
                 }}
+            />
+
+            <Drawer.Screen
+                name="MovimentacaoEstoque"
+                component={MovStockScreen}
+            />
+
+            <Drawer.Screen
+                name="SaldoVariacao"
+                component={SaldoVariacaoEstoque}
+            />
+
+            <Drawer.Screen
+                name="ProdutoVariacaos"
+                component={ProdutoVariacao}
             />
 
             
