@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { ScrollView, Alert, StyleSheet } from "react-native";
+import { ScrollView, Alert, StyleSheet, View, Text, Switch } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 
 import { addCondPag, alteraCondPag } from "../services/CondPagService";
@@ -17,12 +17,14 @@ export default function CondPagScreenDetalhe({ route, navigation }) {
 
     const [nome, setNome] = useState("");
     const [descricao, setDescricao] = useState("");
+    const [permiteParcelar, setPermiteParcelar] = useState(false);
     const [salvando, setSalvando] = useState(false);
 
     useEffect(() => {
         if (condPag) {
             setNome(condPag.nome || "");
             setDescricao(condPag.descricao || "");
+            setPermiteParcelar(condPag.permite_parcelar || false);
         }
     }, []);
 
@@ -38,7 +40,7 @@ export default function CondPagScreenDetalhe({ route, navigation }) {
         if (!validar()) return;
         setSalvando(true);
 
-        const obj = { nome, descricao };
+        const obj = { nome, descricao, permite_parcelar: permiteParcelar };
 
         const response = editando
             ? await alteraCondPag(condPag.documentoId, obj)
@@ -75,7 +77,7 @@ export default function CondPagScreenDetalhe({ route, navigation }) {
                         label="Nome *"
                         value={nome}
                         onChangeText={setNome}
-                        placeholder="Ex: À vista, 30 dias, 30/60/90..."
+                        placeholder="Ex: À vista, Crédito, Débito..."
                         autoCapitalize="words"
                     />
 
@@ -87,6 +89,24 @@ export default function CondPagScreenDetalhe({ route, navigation }) {
                         placeholder="Informações adicionais..."
                         multiline
                     />
+
+                    <SectionLabel titulo="Parcelamento" icone="layers-outline" />
+                    <View style={styles.toggleRow}>
+                        <View style={{ flex: 1 }}>
+                            <Text style={styles.toggleLabel}>Permite parcelar</Text>
+                            <Text style={styles.toggleSub}>
+                                {permiteParcelar
+                                    ? "O usuário poderá definir o número de parcelas"
+                                    : "Pagamento será registrado como parcela única"}
+                            </Text>
+                        </View>
+                        <Switch
+                            value={permiteParcelar}
+                            onValueChange={setPermiteParcelar}
+                            trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
+                            thumbColor="#fff"
+                        />
+                    </View>
 
                     <PrimaryButton
                         title={editando ? "Salvar alterações" : "Cadastrar condição"}
@@ -104,4 +124,26 @@ export default function CondPagScreenDetalhe({ route, navigation }) {
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: theme.colors.background },
     scroll: { flex: 1, paddingHorizontal: 16 },
+    toggleRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        backgroundColor: theme.colors.surface,
+        borderWidth: 1,
+        borderColor: theme.colors.border,
+        borderRadius: theme.radius.md,
+        padding: 14,
+        marginBottom: 12,
+    },
+    toggleLabel: {
+        fontFamily: "Poppins_600SemiBold",
+        fontSize: 14,
+        color: theme.colors.text,
+        marginBottom: 2,
+    },
+    toggleSub: {
+        fontSize: 12,
+        color: theme.colors.muted,
+        fontFamily: "Poppins_400Regular",
+        flexWrap: "wrap",
+    },
 });

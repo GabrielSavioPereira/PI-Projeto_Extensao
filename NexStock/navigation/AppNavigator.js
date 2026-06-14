@@ -5,32 +5,34 @@ import {
     DrawerItem
 } from "@react-navigation/drawer";
 import { Ionicons } from "@expo/vector-icons";
-import Login from "../screens/LoginScreen.js"
+import Login from "../screens/LoginScreen.js";
 import Header from "../components/Header";
 import BarraMenu from "../components/BarraMenu";
 import StackFornecedor from "./StackFornecedor.js";
 import StackCliente from "./StackCliente";
 import StackProdutos from "./StackProdutos.js";
 import StackCondPag from "./StackCondPag";
-import MovStockScreen from "../screens/MovStockScreen.js"
-import SaldoVariacaoEstoque from "../screens/SaldoVariacaoScreen.js"
-import ProdutoVariacao from "../screens/ProdutoVariacaoScreen.js"
+import MovStockScreen from "../screens/MovStockScreen.js";
+import SaldoVariacaoEstoque from "../screens/SaldoVariacaoScreen.js";
+import ProdutoVariacao from "../screens/ProdutoVariacaoScreen.js";
+import StackCompra from "./StackCompra";
 import { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import StackCateg from "./StackCateg.js";
 import StackMarca from "./StackMarca";
-import StackTamanho from "./StackTamanho.js"
-import StackUnidade from "./StackUnidade.js"
-import StackCores from "./StackCores.js"
+import StackTamanho from "./StackTamanho.js";
+import StackUnidade from "./StackUnidade.js";
+import StackCores from "./StackCores.js";
 
 const Drawer = createDrawerNavigator();
 
 function CustomDrawerContent(props) {
     const [openProdutos, setOpenProdutos] = useState(false);
+    const [openCompras, setOpenCompras] = useState(false);
 
     return (
         <DrawerContentScrollView {...props} contentContainerStyle={styles.drawerContainer}>
-            
+
             <View style={styles.drawerHeader}>
                 <Text style={styles.drawerTitle}>Andreia Modas</Text>
                 <View style={styles.drawerDivider} />
@@ -43,254 +45,154 @@ function CustomDrawerContent(props) {
                     props.navigation.navigate("Início");
                     props.navigation.closeDrawer();
                 }}
-                icon={({ color }) => (
-                    <Ionicons name="home-outline" size={20} color={color} />
-                )}
+                icon={({ color }) => <Ionicons name="home-outline" size={20} color={color} />}
             />
 
             {/* PRODUTOS (submenu) */}
             <DrawerItem
                 label={() => (
-    <View style={{ 
-      flexDirection: "row", 
-      justifyContent: "space-between", 
-      alignItems: "center",
-      width: "100%"
-    }}>
-      
-      <Text style={{ fontSize: 15 }}>
-        Produtos
-      </Text>
-
-      <Ionicons
-        name={openProdutos ? "chevron-down" : "chevron-forward"}
-        size={18}
-      />
-
-    </View>
-  )}
-                onPress={() => setOpenProdutos(!openProdutos)}
-                icon={({ color }) => (
-                    <Ionicons name="cube-outline" size={20} color={color} />
+                    <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
+                        <Text style={{ fontSize: 15 }}>Produtos</Text>
+                        <Ionicons name={openProdutos ? "chevron-down" : "chevron-forward"} size={18} />
+                    </View>
                 )}
+                onPress={() => setOpenProdutos(!openProdutos)}
+                icon={({ color }) => <Ionicons name="cube-outline" size={20} color={color} />}
             />
 
-            {/* SUBMENU */}
             {openProdutos && (
                 <View style={{ paddingLeft: 20 }}>
-
                     <DrawerItem
                         label="Cadastrar Produto"
                         onPress={() => {
-                            props.navigation.navigate("Produtos", {
-                                screen: "CadastrarProduto"
-                            });
-                            setOpenProdutos(false); // 🔥 fecha submenu
-                            props.navigation.closeDrawer(); // 🔥 fecha drawer
+                            props.navigation.navigate("Produtos", { screen: "CadastrarProduto" });
+                            setOpenProdutos(false);
+                            props.navigation.closeDrawer();
                         }}
                     />
+                    <DrawerItem label="Marcas" onPress={() => { props.navigation.navigate("Marcas"); props.navigation.closeDrawer(); }} />
+                    <DrawerItem label="Tamanhos" onPress={() => { props.navigation.navigate("Tamanhos"); props.navigation.closeDrawer(); }} />
+                    <DrawerItem label="Cores" onPress={() => { props.navigation.navigate("Cores"); props.navigation.closeDrawer(); }} />
+                    <DrawerItem label="Unidades De Medidas" onPress={() => { props.navigation.navigate("Unidades"); props.navigation.closeDrawer(); }} />
+                    <DrawerItem label="Categorias" onPress={() => { props.navigation.navigate("Categorias"); props.navigation.closeDrawer(); }} />
+                </View>
+            )}
 
+            {/* COMPRAS (submenu) */}
+            <DrawerItem
+                label={() => (
+                    <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
+                        <Text style={{ fontSize: 15 }}>Compras</Text>
+                        <Ionicons name={openCompras ? "chevron-down" : "chevron-forward"} size={18} />
+                    </View>
+                )}
+                onPress={() => setOpenCompras(!openCompras)}
+                icon={({ color }) => <Ionicons name="cart-outline" size={20} color={color} />}
+            />
+
+            {openCompras && (
+                <View style={{ paddingLeft: 20 }}>
                     <DrawerItem
-                    label="Marcas"
-                    onPress={() => {
-                        props.navigation.navigate("Marcas");
-                        props.navigation.closeDrawer();
-                    }}
-                    
-                />
-
-                <DrawerItem
-                    label="Tamanhos"
-                    onPress={() => {
-                        props.navigation.navigate("Tamanhos");
-                        props.navigation.closeDrawer();
-                    }}
-                    
-                />
-
-                <DrawerItem
-                    label="Cores"
-                    onPress={() => {
-                        props.navigation.navigate("Cores");
-                        props.navigation.closeDrawer();
-                    }}
-                />
-
-                <DrawerItem
-                    label="Unidades De Medidas"
-                    onPress={() => {
-                        props.navigation.navigate("Unidades");
-                        props.navigation.closeDrawer();
-                    }}
-                />
-
-                <DrawerItem
-                    label="Categorias"
-                    onPress={() => {
-                        props.navigation.navigate("Categorias");
-                        props.navigation.closeDrawer();
-                    }}
-                />
+                        label="Lista de Compras"
+                        onPress={() => {
+                            props.navigation.navigate("Compras", { screen: "ListaCompras" });
+                            setOpenCompras(false);
+                            props.navigation.closeDrawer();
+                        }}
+                    />
+                    <DrawerItem
+                        label="Nova Compra"
+                        onPress={() => {
+                            props.navigation.navigate("Compras", { screen: "NovaCompra" });
+                            setOpenCompras(false);
+                            props.navigation.closeDrawer();
+                        }}
+                    />
                 </View>
             )}
 
             {/* OUTROS */}
-
             <DrawerItem
                 label="Fornecedores"
-                onPress={() => {
-                    props.navigation.navigate("Fornecedores");
-                    props.navigation.closeDrawer();
-                }}
-                icon={({ color }) => (
-                    <Ionicons name="business-outline" size={20} color={color} />
-                )}
+                onPress={() => { props.navigation.navigate("Fornecedores"); props.navigation.closeDrawer(); }}
+                icon={({ color }) => <Ionicons name="business-outline" size={20} color={color} />}
             />
-
             <DrawerItem
                 label="Clientes"
-                onPress={() => {
-                    props.navigation.navigate("Clientes");
-                    props.navigation.closeDrawer();
-                }}
-                icon={({ color }) => (
-                    <Ionicons name="people-outline" size={20} color={color} />
-                )}
+                onPress={() => { props.navigation.navigate("Clientes"); props.navigation.closeDrawer(); }}
+                icon={({ color }) => <Ionicons name="people-outline" size={20} color={color} />}
             />
             <DrawerItem
                 label="Cond. Pagamento"
-                onPress={() => {
-                    props.navigation.navigate("Condição Pagamento");
-                    props.navigation.closeDrawer();
-                }}
-                icon={({ color }) => (
-                    <Ionicons name="card-outline" size={20} color={color} />
-                )}
+                onPress={() => { props.navigation.navigate("Condição Pagamento"); props.navigation.closeDrawer(); }}
+                icon={({ color }) => <Ionicons name="card-outline" size={20} color={color} />}
             />
-
             <DrawerItem
                 label="Movimentações de Estoque"
-                onPress={() => {
-                    props.navigation.navigate("MovimentacaoEstoque");
-                    props.navigation.closeDrawer();
-                }}
-                icon={({ color }) => (
-                    <Ionicons name="card-outline" size={20} color={color} />
-                )}
+                onPress={() => { props.navigation.navigate("MovimentacaoEstoque"); props.navigation.closeDrawer(); }}
+                icon={({ color }) => <Ionicons name="swap-vertical-outline" size={20} color={color} />}
             />
-
             <DrawerItem
                 label="Saldo das Variações no estoque"
-                onPress={() => {
-                    props.navigation.navigate("SaldoVariacao");
-                    props.navigation.closeDrawer();
-                }}
-                icon={({ color }) => (
-                    <Ionicons name="card-outline" size={20} color={color} />
-                )}
+                onPress={() => { props.navigation.navigate("SaldoVariacao"); props.navigation.closeDrawer(); }}
+                icon={({ color }) => <Ionicons name="bar-chart-outline" size={20} color={color} />}
             />
 
-            
-            
         </DrawerContentScrollView>
     );
 }
 
 export default function AppNavigator() {
     return (
-        <SafeAreaView style={{flex:1}}>
+        <SafeAreaView style={{ flex: 1 }}>
+            <Drawer.Navigator
+                drawerContent={(props) => <CustomDrawerContent {...props} />}
+                screenOptions={({ navigation }) => ({
+                    header: () => <Header navigation={navigation} />,
+                    drawerActiveTintColor: "#C97B84",
+                    drawerInactiveTintColor: "#7a5c60",
+                    drawerActiveBackgroundColor: "#FDECEA",
+                    drawerLabelStyle: {
+                        fontFamily: "Poppins_500Medium",
+                        fontSize: 15,
+                        marginLeft: -8,
+                    },
+                    drawerItemStyle: {
+                        borderRadius: 12,
+                        marginHorizontal: 8,
+                        marginVertical: 2,
+                    },
+                    drawerStyle: {
+                        backgroundColor: "#FFF8F7",
+                        width: 260,
+                    },
+                })}
+            >
+                <Drawer.Screen name="Início" component={BarraMenu} />
+                <Drawer.Screen name="Marcas" component={StackMarca} />
+                <Drawer.Screen name="Tamanhos" component={StackTamanho} />
+                <Drawer.Screen name="Unidades" component={StackUnidade} />
+                <Drawer.Screen name="Categorias" component={StackCateg} />
+                <Drawer.Screen name="Cores" component={StackCores} />
+                <Drawer.Screen name="Fornecedores" component={StackFornecedor} />
+                <Drawer.Screen name="Clientes" component={StackCliente} />
+                <Drawer.Screen name="Condição Pagamento" component={StackCondPag} />
+                <Drawer.Screen
+                    name="Produtos"
+                    component={StackProdutos}
+                    options={{ drawerItemStyle: { display: "none" } }}
+                />
+                <Drawer.Screen name="MovimentacaoEstoque" component={MovStockScreen} />
+                <Drawer.Screen name="SaldoVariacao" component={SaldoVariacaoEstoque} />
+                <Drawer.Screen name="ProdutoVariacaos" component={ProdutoVariacao} />
 
-        <Drawer.Navigator
-            drawerContent={(props) => <CustomDrawerContent {...props} />}
-            screenOptions={({ navigation }) => ({
-                header: () => <Header navigation={navigation} />,
-                drawerActiveTintColor: "#C97B84",
-                drawerInactiveTintColor: "#7a5c60",
-                drawerActiveBackgroundColor: "#FDECEA",
-                drawerLabelStyle: {
-                    fontFamily: "Poppins_500Medium",
-                    fontSize: 15,
-                    marginLeft: -8,
-                },
-                drawerItemStyle: {
-                    borderRadius: 12,
-                    marginHorizontal: 8,
-                    marginVertical: 2,
-                },
-                drawerStyle: {
-                    backgroundColor: "#FFF8F7",
-                    width: 260,
-                },
-            })}
-        >
-            <Drawer.Screen
-                name="Início"
-                component={BarraMenu}
-            />
-
-            <Drawer.Screen
-                name="Marcas"
-                component={StackMarca}
-            />
-
-            <Drawer.Screen
-                name="Tamanhos"
-                component={StackTamanho}
-            />
-
-            <Drawer.Screen
-                name="Unidades"
-                component={StackUnidade}
-            />
-
-            <Drawer.Screen
-                name="Categorias"
-                component={StackCateg}
-            />
-            <Drawer.Screen
-                name="Cores"
-                component={StackCores}
-            />
-
-            <Drawer.Screen
-                name="Fornecedores"
-                component={StackFornecedor}
-            />
-
-            <Drawer.Screen
-                name="Clientes"
-                component={StackCliente}
-            />
-
-            <Drawer.Screen
-                name="Condição Pagamento"
-                component={StackCondPag}
-            />
-            <Drawer.Screen
-                name="Produtos"
-                component={StackProdutos}
-                options={{
-                    drawerItemStyle: { display: "none" } // esconde do menu automático
-                }}
-            />
-
-            <Drawer.Screen
-                name="MovimentacaoEstoque"
-                component={MovStockScreen}
-            />
-
-            <Drawer.Screen
-                name="SaldoVariacao"
-                component={SaldoVariacaoEstoque}
-            />
-
-            <Drawer.Screen
-                name="ProdutoVariacaos"
-                component={ProdutoVariacao}
-            />
-
-            
-        </Drawer.Navigator>
+                {/* COMPRAS */}
+                <Drawer.Screen
+                    name="Compras"
+                    component={StackCompra}
+                    options={{ drawerItemStyle: { display: "none" } }}
+                />
+            </Drawer.Navigator>
         </SafeAreaView>
     );
 }
@@ -312,5 +214,4 @@ const styles = StyleSheet.create({
         height: 1,
         backgroundColor: "#F0C4C4",
     },
-    drawerItems: { flex: 1, paddingTop: 8 },
 });

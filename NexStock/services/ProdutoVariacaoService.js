@@ -46,7 +46,6 @@ export async function addVariacao(variacao) {
         const snapshotValid = await getDocs(queryValid);
 
         if (!snapshotValid.empty) {
-
             return {
                 success: false,
                 message: "Já existe variação com estas caracteristicas",
@@ -76,18 +75,19 @@ export async function addVariacao(variacao) {
     }
 }
 
-export async function buscaVariacaoId(id){
-   try {
-        const q = query(variacaoRef, where("id", "==", id));
-        const snapshot = await getDocs(q);
-        if (snapshot.empty) return null
-        const variacao = snapshot.docs[0];
-        return { success: true, ...variacao.data() };
-    } catch (error){
+// CORRIGIDO: busca pelo documentoId (string do Firestore, ex: "Variacao5")
+// em vez do campo numérico "id"
+export async function buscaVariacaoId(documentoId) {
+    try {
+        const docRef = doc(variacaoRef, documentoId);
+        const snap = await getDoc(docRef);
+        if (!snap.exists()) return null;
+        return { success: true, documentoId: snap.id, ...snap.data() };
+    } catch (e) {
         return {
             success: false,
-            message: "Erro ao buscar a variacao " + id.toString(),
-            error: e 
+            message: "Erro ao buscar a variacao " + documentoId.toString(),
+            error: e
         }
     }
 }
@@ -169,15 +169,15 @@ export async function buscaVariacaoPorTexto(texto) {
         let q = query(variacaoRef, where("codigo", "==", texto));
         let snapshot = await getDocs(q);
         if (!snapshot.empty) {
-            const doc = snapshot.docs[0];
-            return { documentoId: doc.id, ...doc.data() };
+            const d = snapshot.docs[0];
+            return { documentoId: d.id, ...d.data() };
         }
         // Tenta buscar pelo campo 'sku'
         q = query(variacaoRef, where("sku", "==", texto));
         snapshot = await getDocs(q);
         if (!snapshot.empty) {
-            const doc = snapshot.docs[0];
-            return { documentoId: doc.id, ...doc.data() };
+            const d = snapshot.docs[0];
+            return { documentoId: d.id, ...d.data() };
         }
         // Se for número, tenta buscar pelo 'id' numérico
         const idNum = parseInt(texto);
@@ -185,8 +185,8 @@ export async function buscaVariacaoPorTexto(texto) {
             q = query(variacaoRef, where("id", "==", idNum));
             snapshot = await getDocs(q);
             if (!snapshot.empty) {
-                const doc = snapshot.docs[0];
-                return { documentoId: doc.id, ...doc.data() };
+                const d = snapshot.docs[0];
+                return { documentoId: d.id, ...d.data() };
             }
         }
         return null;

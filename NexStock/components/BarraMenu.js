@@ -3,10 +3,9 @@ import { Ionicons } from "@expo/vector-icons";
 
 import HomeScreen from "../screens/HomeScreen";
 import StackProdutos from "../navigation/StackProdutos";
-import ProdutoListScreen from "../screens/ProdutoListScreen";
 import StackMarca from "../navigation/StackMarca";
 import StackCateg from "../navigation/StackCateg";
-import { SafeAreaView } from "react-native-safe-area-context";
+import StackCompra from "../navigation/StackCompra";
 
 const Tab = createBottomTabNavigator();
 
@@ -15,6 +14,7 @@ const TAB_ICONS = {
     Produtos: "shirt-outline",
     Marca: "search-outline",
     Categoria: "search-outline",
+    Compras: "cart-outline",
 };
 
 export default function BarraMenu() {
@@ -40,11 +40,12 @@ export default function BarraMenu() {
                     paddingTop: 6,
                 },
             })}
-            >
+        >
             <Tab.Screen name="Home" component={HomeScreen} />
             <Tab.Screen name="Produtos" component={StackProdutos} />
             <Tab.Screen name="Marca" component={StackMarca} />
             <Tab.Screen name="Categoria" component={StackCateg} />
+            <Tab.Screen name="Compras" component={StackCompra} />
         </Tab.Navigator>
     );
 }

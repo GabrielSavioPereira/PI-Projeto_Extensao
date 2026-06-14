@@ -10,5 +10,8 @@ export const COLLECTIONS = {
     PROD_VARIACOES: "produto_variacoes",
     MOV_ESTOQUE: "movimentacoes_estoque",
     SAL_VARIACOES: "saldo_variacoes",
-    CONDPAG: "condpag"
+    CONDPAG: "condpag",
+    MOV_COMPRA: 'movcompra',
+    ITENS_COMPRA: 'itens_compra',
+    CONTAS_PAGAR: 'contas_pagar',
 }
