@@ -5,30 +5,33 @@ import {
     DrawerItem
 } from "@react-navigation/drawer";
 import { Ionicons } from "@expo/vector-icons";
-import Login from "../screens/LoginScreen.js";
-import Header from "../components/Header";
-import BarraMenu from "../components/BarraMenu";
-import StackFornecedor from "./StackFornecedor.js";
-import StackCliente from "./StackCliente";
-import StackProdutos from "./StackProdutos.js";
-import StackCondPag from "./StackCondPag";
-import MovStockScreen from "../screens/MovStockScreen.js";
-import SaldoVariacaoEstoque from "../screens/SaldoVariacaoScreen.js";
-import ProdutoVariacao from "../screens/ProdutoVariacaoScreen.js";
-import StackCompra from "./StackCompra";
 import { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import StackCateg from "./StackCateg.js";
-import StackMarca from "./StackMarca";
-import StackTamanho from "./StackTamanho.js";
-import StackUnidade from "./StackUnidade.js";
-import StackCores from "./StackCores.js";
+
+import Header               from "../components/Header";
+import BarraMenu            from "../components/BarraMenu";
+import StackFornecedor      from "./StackFornecedor.js";
+import StackCliente         from "./StackCliente";
+import StackProdutos        from "./StackProdutos.js";
+import StackCondPag         from "./StackCondPag";
+import MovStockScreen       from "../screens/MovStockScreen.js";
+import SaldoVariacaoEstoque from "../screens/SaldoVariacaoScreen.js";
+import ProdutoVariacao      from "../screens/ProdutoVariacaoScreen.js";
+import StackCompra          from "./StackCompra";
+import StackCateg           from "./StackCateg.js";
+import StackMarca           from "./StackMarca";
+import StackTamanho         from "./StackTamanho.js";
+import StackUnidade         from "./StackUnidade.js";
+import StackCores           from "./StackCores.js";
+import StackVenda           from "./StackVenda";           
+import VendasMesScreen      from "../screens/VendasMesScreen"; 
 
 const Drawer = createDrawerNavigator();
 
 function CustomDrawerContent(props) {
     const [openProdutos, setOpenProdutos] = useState(false);
-    const [openCompras, setOpenCompras] = useState(false);
+    const [openCompras,  setOpenCompras]  = useState(false);
+    const [openVendas,   setOpenVendas]   = useState(false); 
 
     return (
         <DrawerContentScrollView {...props} contentContainerStyle={styles.drawerContainer}>
@@ -51,17 +54,16 @@ function CustomDrawerContent(props) {
             {/* PRODUTOS (submenu) */}
             <DrawerItem
                 label={() => (
-                    <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
-                        <Text style={{ fontSize: 15 }}>Produtos</Text>
+                    <View style={styles.submenuRow}>
+                        <Text style={styles.submenuLabel}>Produtos</Text>
                         <Ionicons name={openProdutos ? "chevron-down" : "chevron-forward"} size={18} />
                     </View>
                 )}
                 onPress={() => setOpenProdutos(!openProdutos)}
                 icon={({ color }) => <Ionicons name="cube-outline" size={20} color={color} />}
             />
-
             {openProdutos && (
-                <View style={{ paddingLeft: 20 }}>
+                <View style={styles.submenuItens}>
                     <DrawerItem
                         label="Cadastrar Produto"
                         onPress={() => {
@@ -70,28 +72,27 @@ function CustomDrawerContent(props) {
                             props.navigation.closeDrawer();
                         }}
                     />
-                    <DrawerItem label="Marcas" onPress={() => { props.navigation.navigate("Marcas"); props.navigation.closeDrawer(); }} />
-                    <DrawerItem label="Tamanhos" onPress={() => { props.navigation.navigate("Tamanhos"); props.navigation.closeDrawer(); }} />
-                    <DrawerItem label="Cores" onPress={() => { props.navigation.navigate("Cores"); props.navigation.closeDrawer(); }} />
-                    <DrawerItem label="Unidades De Medidas" onPress={() => { props.navigation.navigate("Unidades"); props.navigation.closeDrawer(); }} />
-                    <DrawerItem label="Categorias" onPress={() => { props.navigation.navigate("Categorias"); props.navigation.closeDrawer(); }} />
+                    <DrawerItem label="Marcas"              onPress={() => { props.navigation.navigate("Marcas");     props.navigation.closeDrawer(); }} />
+                    <DrawerItem label="Tamanhos"            onPress={() => { props.navigation.navigate("Tamanhos");   props.navigation.closeDrawer(); }} />
+                    <DrawerItem label="Cores"               onPress={() => { props.navigation.navigate("Cores");      props.navigation.closeDrawer(); }} />
+                    <DrawerItem label="Unidades De Medidas" onPress={() => { props.navigation.navigate("Unidades");   props.navigation.closeDrawer(); }} />
+                    <DrawerItem label="Categorias"          onPress={() => { props.navigation.navigate("Categorias"); props.navigation.closeDrawer(); }} />
                 </View>
             )}
 
             {/* COMPRAS (submenu) */}
             <DrawerItem
                 label={() => (
-                    <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
-                        <Text style={{ fontSize: 15 }}>Compras</Text>
+                    <View style={styles.submenuRow}>
+                        <Text style={styles.submenuLabel}>Compras</Text>
                         <Ionicons name={openCompras ? "chevron-down" : "chevron-forward"} size={18} />
                     </View>
                 )}
                 onPress={() => setOpenCompras(!openCompras)}
                 icon={({ color }) => <Ionicons name="cart-outline" size={20} color={color} />}
             />
-
             {openCompras && (
-                <View style={{ paddingLeft: 20 }}>
+                <View style={styles.submenuItens}>
                     <DrawerItem
                         label="Lista de Compras"
                         onPress={() => {
@@ -110,6 +111,39 @@ function CustomDrawerContent(props) {
                     />
                 </View>
             )}
+
+            {/* ── VENDAS (submenu) — NOVO ─────────────────────────────────────── */}
+            <DrawerItem
+                label={() => (
+                    <View style={styles.submenuRow}>
+                        <Text style={styles.submenuLabel}>Vendas</Text>
+                        <Ionicons name={openVendas ? "chevron-down" : "chevron-forward"} size={18} />
+                    </View>
+                )}
+                onPress={() => setOpenVendas(!openVendas)}
+                icon={({ color }) => <Ionicons name="bag-handle-outline" size={20} color={color} />}
+            />
+            {openVendas && (
+                <View style={styles.submenuItens}>
+                    <DrawerItem
+                        label="Nova Venda"
+                        onPress={() => {
+                            props.navigation.navigate("Vendas", { screen: "VendaList" });
+                            setOpenVendas(false);
+                            props.navigation.closeDrawer();
+                        }}
+                    />
+                    <DrawerItem
+                        label="Vendas do Mês"
+                        onPress={() => {
+                            props.navigation.navigate("VendasMes");
+                            setOpenVendas(false);
+                            props.navigation.closeDrawer();
+                        }}
+                    />
+                </View>
+            )}
+            {/* ────────────────────────────────────────────────────────────────── */}
 
             {/* OUTROS */}
             <DrawerItem
@@ -149,47 +183,59 @@ export default function AppNavigator() {
                 drawerContent={(props) => <CustomDrawerContent {...props} />}
                 screenOptions={({ navigation }) => ({
                     header: () => <Header navigation={navigation} />,
-                    drawerActiveTintColor: "#C97B84",
-                    drawerInactiveTintColor: "#7a5c60",
-                    drawerActiveBackgroundColor: "#FDECEA",
+                    drawerActiveTintColor:      "#C97B84",
+                    drawerInactiveTintColor:    "#7a5c60",
+                    drawerActiveBackgroundColor:"#FDECEA",
                     drawerLabelStyle: {
-                        fontFamily: "Poppins_500Medium",
-                        fontSize: 15,
-                        marginLeft: -8,
+                        fontFamily:  "Poppins_500Medium",
+                        fontSize:    15,
+                        marginLeft:  -8,
                     },
                     drawerItemStyle: {
-                        borderRadius: 12,
+                        borderRadius:    12,
                         marginHorizontal: 8,
-                        marginVertical: 2,
+                        marginVertical:  2,
                     },
                     drawerStyle: {
                         backgroundColor: "#FFF8F7",
-                        width: 260,
+                        width:           260,
                     },
                 })}
             >
-                <Drawer.Screen name="Início" component={BarraMenu} />
-                <Drawer.Screen name="Marcas" component={StackMarca} />
-                <Drawer.Screen name="Tamanhos" component={StackTamanho} />
-                <Drawer.Screen name="Unidades" component={StackUnidade} />
-                <Drawer.Screen name="Categorias" component={StackCateg} />
-                <Drawer.Screen name="Cores" component={StackCores} />
-                <Drawer.Screen name="Fornecedores" component={StackFornecedor} />
-                <Drawer.Screen name="Clientes" component={StackCliente} />
-                <Drawer.Screen name="Condição Pagamento" component={StackCondPag} />
+                <Drawer.Screen name="Início"              component={BarraMenu} />
+                <Drawer.Screen name="Marcas"              component={StackMarca} />
+                <Drawer.Screen name="Tamanhos"            component={StackTamanho} />
+                <Drawer.Screen name="Unidades"            component={StackUnidade} />
+                <Drawer.Screen name="Categorias"          component={StackCateg} />
+                <Drawer.Screen name="Cores"               component={StackCores} />
+                <Drawer.Screen name="Fornecedores"        component={StackFornecedor} />
+                <Drawer.Screen name="Clientes"            component={StackCliente} />
+                <Drawer.Screen name="Condição Pagamento"  component={StackCondPag} />
                 <Drawer.Screen
                     name="Produtos"
                     component={StackProdutos}
                     options={{ drawerItemStyle: { display: "none" } }}
                 />
                 <Drawer.Screen name="MovimentacaoEstoque" component={MovStockScreen} />
-                <Drawer.Screen name="SaldoVariacao" component={SaldoVariacaoEstoque} />
-                <Drawer.Screen name="ProdutoVariacaos" component={ProdutoVariacao} />
+                <Drawer.Screen name="SaldoVariacao"       component={SaldoVariacaoEstoque} />
+                <Drawer.Screen name="ProdutoVariacaos"    component={ProdutoVariacao} />
 
                 {/* COMPRAS */}
                 <Drawer.Screen
                     name="Compras"
                     component={StackCompra}
+                    options={{ drawerItemStyle: { display: "none" } }}
+                />
+
+                {/* VENDAS — NOVO */}
+                <Drawer.Screen
+                    name="Vendas"
+                    component={StackVenda}
+                    options={{ drawerItemStyle: { display: "none" } }}
+                />
+                <Drawer.Screen
+                    name="VendasMes"
+                    component={VendasMesScreen}
                     options={{ drawerItemStyle: { display: "none" } }}
                 />
             </Drawer.Navigator>
@@ -201,17 +247,25 @@ const styles = StyleSheet.create({
     drawerContainer: { flex: 1 },
     drawerHeader: {
         paddingHorizontal: 20,
-        paddingTop: 48,
-        paddingBottom: 16,
+        paddingTop:        48,
+        paddingBottom:     16,
     },
     drawerTitle: {
-        fontFamily: "Poppins_600SemiBold",
-        fontSize: 18,
-        color: "#7a3c48",
+        fontFamily:   "Poppins_600SemiBold",
+        fontSize:     18,
+        color:        "#7a3c48",
         marginBottom: 12,
     },
     drawerDivider: {
-        height: 1,
+        height:          1,
         backgroundColor: "#F0C4C4",
     },
+    submenuRow: {
+        flexDirection:  "row",
+        justifyContent: "space-between",
+        alignItems:     "center",
+        width:          "100%",
+    },
+    submenuLabel: { fontSize: 15 },
+    submenuItens: { paddingLeft: 20 },
 });

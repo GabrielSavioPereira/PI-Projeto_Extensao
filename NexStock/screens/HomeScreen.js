@@ -1,6 +1,7 @@
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from "react-native";
 import { useEffect, useState } from "react";
 import { escutaProdutos } from "../services/ProdutoService";
+import { buscaVendasDoMes } from "../services/VendaService";
 import {
     ScreenContainer,
     Loading,
@@ -8,54 +9,35 @@ import {
     theme,
 } from "../components/ui";
 
-const CARDS = (totalProdutos, loading) => [
-    {
-        icon: "shirt-outline",
-        label: "Total de\nProdutos",
-        value: loading ? "..." : String(totalProdutos),
-        color: "#C97B84",
-        bg: "#FDECEA",
-        disponivel: true,
-        tela: "Produtos",
-    },
-    {
-        icon: "alert-circle-outline",
-        label: "Estoque\nBaixo",
-        value: "Em breve",
-        color: "#E07B54",
-        bg: "#FDF0EB",
-        disponivel: false,
-    },
-    {
-        icon: "wallet-outline",
-        label: "Saldo\nFinanceiro",
-        value: "Em breve",
-        color: "#7B84C9",
-        bg: "#EDEAFD",
-        disponivel: false,
-    },
-    {
-        icon: "trending-up-outline",
-        label: "Vendas\nno Mês",
-        value: "Em breve",
-        color: "#5BA882",
-        bg: "#EAFAF3",
-        disponivel: false,
-    },
-];
-
 export default function HomeScreen({ navigation }) {
     const [produtos, setProdutos] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [loadingProd, setLoadingProd] = useState(true);
 
+    const [totalVendasMes, setTotalVendasMes] = useState(null);
+    const [loadingVendas, setLoadingVendas]   = useState(true);
+
+    // ── Produtos ───────────────────────────────────────────────────────────────
     useEffect(() => {
         const unsubscribe = escutaProdutos((lista) => {
             setProdutos(lista);
-            setLoading(false);
+            setLoadingProd(false);
         });
         return () => unsubscribe();
     }, []);
 
+    // ── Vendas do mês atual ────────────────────────────────────────────────────
+    useEffect(() => {
+        const hoje = new Date();
+        buscaVendasDoMes(hoje.getMonth() + 1, hoje.getFullYear()).then((res) => {
+            if (res.success) {
+                const total = res.vendas.reduce((acc, v) => acc + (v.total ?? 0), 0);
+                setTotalVendasMes(total);
+            }
+            setLoadingVendas(false);
+        });
+    }, []);
+
+    // ── Gráfico por categoria ──────────────────────────────────────────────────
     const categorias = produtos.reduce((acc, p) => {
         const cat = p.categoria_id ?? "Sem Categoria";
         acc[cat] = (acc[cat] || 0) + 1;
@@ -69,7 +51,43 @@ export default function HomeScreen({ navigation }) {
 
     const maxQtd = Math.max(...categoriasArray.map((c) => c.qtd), 1);
 
-    const cards = CARDS(produtos.length, loading);
+    // ── Definição dos cards ────────────────────────────────────────────────────
+    const cards = [
+        {
+            label:      "Total de\nProdutos",
+            value:      loadingProd ? "..." : String(produtos.length),
+            color:      "#C97B84",
+            bg:         "#FDECEA",
+            disponivel: true,
+            onPress:    () => navigation.navigate("Produtos"),
+        },
+        {
+            label:      "Estoque\nBaixo",
+            value:      "Em breve",
+            color:      "#E07B54",
+            bg:         "#FDF0EB",
+            disponivel: false,
+        },
+        {
+            label:      "Saldo\nFinanceiro",
+            value:      "Em breve",
+            color:      "#7B84C9",
+            bg:         "#EDEAFD",
+            disponivel: false,
+        },
+        {
+            label:      "Vendas\nno Mês",
+            value:      loadingVendas
+                            ? "..."
+                            : totalVendasMes !== null
+                                ? `R$ ${totalVendasMes.toFixed(2)}`
+                                : "R$ 0,00",
+            color:      "#5BA882",
+            bg:         "#EAFAF3",
+            disponivel: true,
+            onPress:    () => navigation.navigate("VendasMes"),
+        },
+    ];
 
     return (
         <ScreenContainer>
@@ -94,31 +112,33 @@ export default function HomeScreen({ navigation }) {
                                 !card.disponivel && styles.cardDisabled,
                             ]}
                             activeOpacity={card.disponivel ? 0.8 : 1}
-                            onPress={() =>
-                                card.disponivel &&
-                                card.tela &&
-                                navigation.navigate(card.tela)
-                            }
+                            onPress={() => card.disponivel && card.onPress?.()}
                         >
-                            <Text style={[styles.cardIcon]}>{/* ícone via Ionicons se quiser */}</Text>
                             <Text
                                 style={[
                                     styles.cardValue,
                                     { color: card.disponivel ? card.color : "#ccc" },
                                 ]}
+                                numberOfLines={2}
+                                adjustsFontSizeToFit
                             >
                                 {card.value}
                             </Text>
                             <Text style={styles.cardLabel}>{card.label}</Text>
+
+                            {/* Indicador de clicável */}
+                            {card.disponivel && (
+                                <Text style={[styles.cardSeta, { color: card.color }]}>→</Text>
+                            )}
                         </TouchableOpacity>
                     ))}
                 </View>
 
-                {/* Gráfico de barras */}
+                {/* Gráfico de barras por categoria */}
                 <View style={styles.chartCard}>
                     <Text style={styles.chartTitle}>Produto por Categoria</Text>
 
-                    {loading ? (
+                    {loadingProd ? (
                         <Loading />
                     ) : categoriasArray.length === 0 ? (
                         <EmptyState
@@ -158,74 +178,83 @@ export default function HomeScreen({ navigation }) {
 const styles = StyleSheet.create({
     content: { padding: 20, paddingBottom: 40 },
 
-    greeting: { marginBottom: 20, marginTop: 4 },
-    greetingHello: {
+    greeting:       { marginBottom: 20, marginTop: 4 },
+    greetingHello:  {
         fontFamily: theme.fonts.regular,
-        fontSize: 16,
-        color: theme.colors.muted,
+        fontSize:   16,
+        color:      theme.colors.muted,
     },
-    greetingName: {
+    greetingName:   {
         fontFamily: theme.fonts.semiBold,
-        fontSize: 24,
-        color: theme.colors.primaryDark,
-        marginTop: -4,
+        fontSize:   24,
+        color:      theme.colors.primaryDark,
+        marginTop:  -4,
     },
 
     cardsGrid: {
-        flexDirection: "row",
-        flexWrap: "wrap",
-        gap: 12,
-        marginBottom: 24,
+        flexDirection:  "row",
+        flexWrap:       "wrap",
+        gap:            12,
+        marginBottom:   24,
     },
     card: {
-        width: "47%",
-        borderRadius: theme.radius.lg,
-        padding: 16,
-        alignItems: "flex-start",
-        gap: 8,
+        width:          "47%",
+        borderRadius:   theme.radius.lg,
+        padding:        16,
+        alignItems:     "flex-start",
+        gap:            6,
         ...theme.shadow,
     },
     cardDisabled: { opacity: 0.5 },
-    cardValue: { fontFamily: theme.fonts.semiBold, fontSize: 20 },
-    cardLabel: {
+    cardValue:    {
+        fontFamily: theme.fonts.semiBold,
+        fontSize:   18,
+        minHeight:  26,
+    },
+    cardLabel:    {
         fontFamily: theme.fonts.regular,
-        fontSize: 12,
-        color: theme.colors.secondary,
+        fontSize:   12,
+        color:      theme.colors.secondary,
         lineHeight: 16,
+    },
+    cardSeta:     {
+        fontFamily: theme.fonts.semiBold,
+        fontSize:   16,
+        marginTop:  4,
     },
 
     chartCard: {
         backgroundColor: theme.colors.surface,
-        borderRadius: theme.radius.lg,
-        padding: 16,
+        borderRadius:    theme.radius.lg,
+        padding:         16,
         ...theme.shadow,
     },
     chartTitle: {
-        fontFamily: theme.fonts.semiBold,
-        fontSize: 15,
-        color: theme.colors.primary,
+        fontFamily:   theme.fonts.semiBold,
+        fontSize:     15,
+        color:        theme.colors.primary,
         marginBottom: 16,
     },
     chart: {
         flexDirection: "row",
-        alignItems: "flex-end",
-        gap: 8,
+        alignItems:    "flex-end",
+        gap:           8,
         paddingBottom: 4,
     },
-    barWrapper: { alignItems: "center", width: 52 },
-    barValue: {
-        fontFamily: theme.fonts.semiBold,
-        fontSize: 11,
-        color: theme.colors.primary,
+    barWrapper:   { alignItems: "center", width: 52 },
+    barValue:     {
+        fontFamily:   theme.fonts.semiBold,
+        fontSize:     11,
+        color:        theme.colors.primary,
         marginBottom: 4,
     },
     barContainer: { height: 120, justifyContent: "flex-end" },
-    bar: { width: 28, borderRadius: 6 },
-    barLabel: {
+    bar:          { width: 28, borderRadius: 6 },
+    barLabel:     {
         fontFamily: theme.fonts.regular,
-        fontSize: 9,
-        color: theme.colors.secondary,
-        marginTop: 6,
-        textAlign: "center",
+        fontSize:   9,
+        color:      theme.colors.secondary,
+        marginTop:  6,
+        textAlign:  "center",
     },
 });

@@ -14,4 +14,5 @@ export const COLLECTIONS = {
     MOV_COMPRA: 'movcompra',
     ITENS_COMPRA: 'itens_compra',
     CONTAS_PAGAR: 'contas_pagar',
+    VENDAS:          "vendas", 
 }

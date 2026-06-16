@@ -6,6 +6,7 @@ import StackProdutos from "../navigation/StackProdutos";
 import StackMarca from "../navigation/StackMarca";
 import StackCateg from "../navigation/StackCateg";
 import StackCompra from "../navigation/StackCompra";
+import StackVenda from "../navigation/StackVenda";
 
 const Tab = createBottomTabNavigator();
 
@@ -15,6 +16,7 @@ const TAB_ICONS = {
     Marca: "search-outline",
     Categoria: "search-outline",
     Compras: "cart-outline",
+    Vendas:   "bag-handle-outline",
 };
 
 export default function BarraMenu() {
@@ -46,6 +48,7 @@ export default function BarraMenu() {
             <Tab.Screen name="Marca" component={StackMarca} />
             <Tab.Screen name="Categoria" component={StackCateg} />
             <Tab.Screen name="Compras" component={StackCompra} />
+            <Tab.Screen name="Vendas" component={StackVenda} />
         </Tab.Navigator>
     );
 }
