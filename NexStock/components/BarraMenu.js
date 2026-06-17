@@ -7,14 +7,13 @@ import StackMarca from "../navigation/StackMarca";
 import StackCateg from "../navigation/StackCateg";
 import StackCompra from "../navigation/StackCompra";
 import StackVenda from "../navigation/StackVenda";
+import SaldoEstoque from "../screens/SaldoVariacaoScreen"
 
 const Tab = createBottomTabNavigator();
 
 const TAB_ICONS = {
     Home: "home-outline",
-    Produtos: "shirt-outline",
-    Marca: "search-outline",
-    Categoria: "search-outline",
+    Estoque: "shirt-outline",
     Compras: "cart-outline",
     Vendas:   "bag-handle-outline",
 };
@@ -44,11 +43,9 @@ export default function BarraMenu() {
             })}
         >
             <Tab.Screen name="Home" component={HomeScreen} />
-            <Tab.Screen name="Produtos" component={StackProdutos} />
-            <Tab.Screen name="Marca" component={StackMarca} />
-            <Tab.Screen name="Categoria" component={StackCateg} />
             <Tab.Screen name="Compras" component={StackCompra} />
             <Tab.Screen name="Vendas" component={StackVenda} />
+            <Tab.Screen name="Estoque" component={SaldoEstoque} />
         </Tab.Navigator>
     );
 }

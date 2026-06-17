@@ -83,34 +83,29 @@ export async function addCor(cor) {
     }
 }
 
-export async function buscaCorId(id){
-   
-   try {
 
-        const q = query(
-            corRef,
-            where("id", "==", id)
-        );
+export async function buscaCorId(id) {
 
-        const snapshot = await getDocs(q);
+    try {
 
-        if (snapshot.empty){
-            return null
-        }
+        const snapshot = await getDocs(corRef);
 
-        const cor = snapshot.docs[0];
+        const cor = snapshot.docs.find(doc => {
+            const data = doc.data();
+            return data.id == id
+        })
+        
+        if (!cor) return null;
+        console.log("Cor: ", cor.data())
+        return cor.data();
 
-        return {
-            ...cor.data()
-        };
-    } catch (error){
+    } catch(e) {
         return {
             success: false,
-            message: "Erro ao buscar a cor " + id.toString(),
-            error: e 
+            message: "Erro ao buscar as cor",
+            error: e
         }
     }
-
 }
 
 export async function buscaCores(){

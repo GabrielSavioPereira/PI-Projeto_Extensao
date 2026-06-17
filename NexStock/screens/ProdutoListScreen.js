@@ -14,6 +14,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { ScreenContainer, Header, SearchBar, EmptyState, FAB, theme } from "../components/ui";
 import { buscaProdutos, deletaProduto } from "../services/ProdutoService";
 import { buscaVariacoesPorProduto, deletaVariacao } from "../services/ProdutoVariacaoService";
+import { buscaCores, buscaCorId } from "../services/CorService"
+import { buscaTams } from "../services/TamanhoService";
 
 if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
     UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -103,6 +105,44 @@ export default function ProdutoListScreen({ navigation }) {
         ]);
     };
 
+    const [cores, setCores] = useState([]);
+
+    const buscaCor = (id) => {
+        const cor = cores.find(c => c.id === id);
+
+        return cor.nome
+    }
+
+    const [tams, setTams] = useState([]);
+
+    const buscaTamanho = (id) => {
+        const tam = tams.find(t => t.id === id);
+
+        return tam.nome
+    }
+
+    useEffect(() => {
+        const carregarCores = async () => {
+            
+            const res = await buscaCores();
+
+            if (!res.success) {
+                setCores(null)
+            }
+
+            setCores(res.cores);
+        };
+
+        const carregarTamanhos = async () => {
+            const res = await buscaTams();
+
+            setTams(res.tams)
+        }
+
+        carregarTamanhos();
+        carregarCores();
+    }, []);
+
     const produtosFiltrados = produtos.filter(p =>
         p.nome?.toLowerCase().includes(busca.toLowerCase()) ||
         p.codigo?.includes(busca)
@@ -118,7 +158,7 @@ export default function ProdutoListScreen({ navigation }) {
                 <Ionicons name="color-palette-outline" size={14} color={theme.colors.primary} />
                 <View style={{ flex: 1 }}>
                     <Text style={styles.variacaoText}>
-                        Cor: {variacao.cor_id} | Tam: {variacao.tamanho_id}
+                        Cor: {buscaCor(variacao.cor_id)} | Tam: {buscaTamanho(variacao.tamanho_id)}
                     </Text>
                     <Text style={styles.variacaoSku}>SKU: {variacao.sku}</Text>
                 </View>
@@ -155,7 +195,6 @@ export default function ProdutoListScreen({ navigation }) {
                     <View style={styles.produtoInfo}>
                         <Text style={styles.produtoNome}>{produto.nome}</Text>
                         <Text style={styles.produtoCodigo}>Código: {produto.codigo}</Text>
-                        <Text style={styles.produtoPreco}>R$ {produto.preco_venda?.toFixed(2)}</Text>
                     </View>
                     <View style={styles.headerActions}>
                         <TouchableOpacity onPress={() => navigation.navigate("ProdutoForm", { produto })} style={styles.iconButton}>

@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from "react";
 import {
     View, Text, TextInput, TouchableOpacity,
-    ScrollView, Alert, ActivityIndicator, Modal
+    ScrollView, Alert, ActivityIndicator, Modal, FlatList, SafeAreaView
 } from "react-native";
-import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Ionicons } from "@expo/vector-icons";
 import { Header, Card, PrimaryButton, SectionLabel, FormField, EmptyState, theme } from "../components/ui";
 import { finalizaCompra } from "../services/MovCompraService";
 import { escutaFornecedores } from "../services/FornecedorService";
 import { escutaCondPag } from "../services/CondPagService";
-import { buscaVariacoes } from "../services/ProdutoVariacaoService";
+import { buscaVariacaoPorTexto, buscaVariacoes } from "../services/ProdutoVariacaoService";
 import { buscaProdutos } from "../services/ProdutoService";
+import { buscaTodosSaldos } from "../services/SaldoVariacaoService";
 
 // ─── STEP INDICATOR ────────────────────────────────────────────
 function StepIndicator({ step }) {
@@ -49,7 +50,7 @@ function StepIndicator({ step }) {
     );
 }
 
-// ─── SELECTOR MODAL ────────────────────────────────────────────
+// ─── SELECTOR MODAL (fornecedor / cond.pag) ──────────────────
 function SelectorModal({ visible, onClose, titulo, lista, labelKey, onSelect }) {
     const [busca, setBusca] = useState("");
     const filtrada = lista.filter(i =>
@@ -87,19 +88,64 @@ function SelectorModal({ visible, onClose, titulo, lista, labelKey, onSelect }) 
     );
 }
 
-// ─── MODAL ADICIONAR ITEM ──────────────────────────────────────
-function AddItemModal({ visible, onClose, onAdd, variacoes, produtos }) {
-    const [busca, setBusca] = useState("");
+// ─── MODAL ADICIONAR ITEM (com busca igual à movimentação) ──
+function AddItemModal({ visible, onClose, onAdd, variacoes, produtos, saldosMap }) {
+    const [buscaTexto, setBuscaTexto] = useState("");
     const [varSelecionada, setVarSelecionada] = useState(null);
     const [quantidade, setQuantidade] = useState("1");
     const [custo, setCusto] = useState("");
+    const [buscando, setBuscando] = useState(false);
 
-    const lista = variacoes
-        .filter(v => v.codigo?.toLowerCase().includes(busca.toLowerCase()) || v.sku?.toLowerCase().includes(busca.toLowerCase()))
-        .map(v => {
-            const p = produtos.find(p => p.id === v.produto_id || p.documentoId === v.produto_id);
-            return { ...v, produto_nome: p?.nome || "" };
-        });
+    // Modal de seleção (lista todas as variações)
+    const [selecaoVisible, setSelecaoVisible] = useState(false);
+    const [buscaSelecao, setBuscaSelecao] = useState("");
+    const [todasVariacoes, setTodasVariacoes] = useState([]);
+    const [produtosMap, setProdutosMap] = useState({});
+    const [saldosMapLocal, setSaldosMapLocal] = useState({});
+
+    // Monta mapas
+    useEffect(() => {
+        const map = {};
+        produtos.forEach(p => { map[p.id || p.documentoId] = p.nome; });
+        setProdutosMap(map);
+        setTodasVariacoes(variacoes);
+        setSaldosMapLocal(saldosMap || {});
+    }, [variacoes, produtos, saldosMap]);
+
+    // Busca variação pelo texto (código, SKU ou ID)
+    const buscarVariacao = async () => {
+        if (!buscaTexto.trim()) {
+            Alert.alert("Atenção", "Digite o código, SKU ou ID da variação");
+            return;
+        }
+        setBuscando(true);
+        try {
+            const vari = await buscaVariacaoPorTexto(buscaTexto.trim());
+            if (vari) {
+                setVarSelecionada(vari);
+            } else {
+                Alert.alert("Não encontrado", "Nenhuma variação com esse código, SKU ou ID");
+                setVarSelecionada(null);
+            }
+        } catch (error) {
+            Alert.alert("Erro", "Falha ao buscar variação");
+        } finally {
+            setBuscando(false);
+        }
+    };
+
+    // Abre modal de seleção
+    const abrirSelecao = () => {
+        setSelecaoVisible(true);
+        setBuscaSelecao("");
+    };
+
+    // Seleciona variação do modal
+    const selecionarVariacao = (vari) => {
+        setVarSelecionada(vari);
+        setSelecaoVisible(false);
+        setBuscaTexto("");
+    };
 
     const handleAdd = () => {
         if (!varSelecionada) return Alert.alert("Atenção", "Selecione uma variação");
@@ -108,82 +154,171 @@ function AddItemModal({ visible, onClose, onAdd, variacoes, produtos }) {
         if (!qtd || qtd <= 0) return Alert.alert("Atenção", "Quantidade inválida");
         if (!custoVal || custoVal <= 0) return Alert.alert("Atenção", "Custo inválido");
 
+        // ⚠️ CORREÇÃO: usa o ID numérico (varSelecionada.id) em vez do documentoId
         onAdd({
-            variacao_id: varSelecionada.documentoId,
+            variacao_id: varSelecionada.id, // <-- ID numérico
             variacao_codigo: varSelecionada.codigo,
-            produto_nome: varSelecionada.produto_nome,
+            produto_nome: produtosMap[varSelecionada.produto_id] || "Produto",
             quantidade: qtd,
             custo_unitario: custoVal,
             total_item: parseFloat((qtd * custoVal).toFixed(2)),
         });
-        setVarSelecionada(null); setBusca(""); setQuantidade("1"); setCusto("");
+        setVarSelecionada(null);
+        setBuscaTexto("");
+        setQuantidade("1");
+        setCusto("");
         onClose();
     };
 
-    return (
-        <Modal visible={visible} animationType="slide" transparent={false}>
-            <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }}>
-                <View style={{ flexDirection: "row", alignItems: "center", padding: 16, gap: 12 }}>
-                    <TouchableOpacity onPress={onClose}>
-                        <Ionicons name="close" size={24} color={theme.colors.primary} />
-                    </TouchableOpacity>
-                    <Text style={{ fontFamily: theme.fonts.semiBold, fontSize: 18, color: theme.colors.text }}>Adicionar produto</Text>
-                </View>
-                <ScrollView contentContainerStyle={{ padding: 16 }}>
-                    <SectionLabel titulo="Buscar variação" icone="search" />
-                    <TextInput
-                        style={{ backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.border, borderRadius: theme.radius.md, paddingHorizontal: 14, paddingVertical: 10, marginBottom: 8 }}
-                        placeholder="Código ou SKU"
-                        value={busca}
-                        onChangeText={(t) => { setBusca(t); setVarSelecionada(null); }}
-                    />
-                    {busca.length > 0 && !varSelecionada && (
-                        <Card style={{ marginBottom: 12, padding: 0 }}>
-                            {lista.slice(0, 5).map((v, idx) => (
-                                <TouchableOpacity key={idx} onPress={() => { setVarSelecionada(v); setBusca(""); }}
-                                    style={{ padding: 12, borderBottomWidth: idx < lista.length - 1 ? 1 : 0, borderBottomColor: theme.colors.border }}>
-                                    <Text style={{ fontFamily: theme.fonts.semiBold, fontSize: 14, color: theme.colors.text }}>{v.produto_nome}</Text>
-                                    <Text style={{ fontSize: 12, color: theme.colors.muted }}>Cód: {v.codigo} · SKU: {v.sku}</Text>
-                                </TouchableOpacity>
-                            ))}
-                            {lista.length === 0 && <Text style={{ padding: 12, color: theme.colors.muted }}>Nenhuma variação encontrada</Text>}
-                        </Card>
-                    )}
-                    {varSelecionada && (
-                        <View style={{ backgroundColor: theme.colors.primaryLight, borderRadius: theme.radius.md, padding: 12, marginBottom: 12, flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-                            <View>
-                                <Text style={{ fontFamily: theme.fonts.semiBold, color: theme.colors.primaryDark }}>{varSelecionada.produto_nome}</Text>
-                                <Text style={{ fontSize: 12, color: theme.colors.primary }}>Cód: {varSelecionada.codigo}</Text>
-                            </View>
-                            <TouchableOpacity onPress={() => setVarSelecionada(null)}>
-                                <Ionicons name="close-circle" size={20} color={theme.colors.primary} />
-                            </TouchableOpacity>
-                        </View>
-                    )}
+    // Filtra variações no modal de seleção
+    const variacoesFiltradas = todasVariacoes.filter(v => {
+        const termo = buscaSelecao.toLowerCase();
+        const nomeProd = produtosMap[v.produto_id] || "";
+        return nomeProd.toLowerCase().includes(termo) ||
+            (v.codigo || "").toLowerCase().includes(termo) ||
+            (v.sku || "").toLowerCase().includes(termo);
+    });
 
-                    <SectionLabel titulo="Quantidade e custo" icone="calculator" />
-                    <View style={{ flexDirection: "row", gap: 12 }}>
-                        <View style={{ flex: 1 }}>
-                            <FormField label="Quantidade" value={quantidade} onChangeText={setQuantidade} keyboardType="numeric" />
-                        </View>
-                        <View style={{ flex: 1 }}>
-                            <FormField label="Custo unit. (R$)" value={custo} onChangeText={setCusto} keyboardType="decimal-pad" placeholder="0,00" />
-                        </View>
+    return (
+        <>
+            {/* Modal principal de adição */}
+            <Modal visible={visible} animationType="slide" transparent={false}>
+                <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }}>
+                    <View style={{ flexDirection: "row", alignItems: "center", padding: 16, gap: 12 }}>
+                        <TouchableOpacity onPress={onClose}>
+                            <Ionicons name="close" size={24} color={theme.colors.primary} />
+                        </TouchableOpacity>
+                        <Text style={{ fontFamily: theme.fonts.semiBold, fontSize: 18, color: theme.colors.text }}>Adicionar produto</Text>
                     </View>
 
-                    {quantidade && custo ? (
-                        <View style={{ backgroundColor: theme.colors.primaryLight, borderRadius: theme.radius.md, padding: 12, marginBottom: 20, flexDirection: "row", justifyContent: "space-between" }}>
-                            <Text style={{ color: theme.colors.primaryDark }}>Total do item</Text>
-                            <Text style={{ fontFamily: theme.fonts.semiBold, color: theme.colors.primary }}>
-                                {(parseInt(quantidade || 0) * parseFloat((custo || "0").replace(",", "."))).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-                            </Text>
-                        </View>
-                    ) : null}
+                    <ScrollView contentContainerStyle={{ padding: 16 }}>
 
-                    <PrimaryButton title="Adicionar item" onPress={handleAdd} icone="add-circle-outline" />
-                </ScrollView>
-            </SafeAreaView>
-        </Modal>
+                        <SectionLabel titulo="Variação" icone="pricetag" />
+                        <View style={{ flexDirection: "row", gap: 8, marginBottom: 8 }}>
+                            <TextInput
+                                style={{
+                                    flex: 1,
+                                    borderWidth: 1,
+                                    borderColor: theme.colors.border,
+                                    borderRadius: theme.radius.md,
+                                    padding: 10,
+                                    backgroundColor: theme.colors.surface,
+                                }}
+                                placeholder="Código, SKU ou ID"
+                                value={buscaTexto}
+                                onChangeText={setBuscaTexto}
+                            />
+                            <TouchableOpacity
+                                style={{ padding: 10, backgroundColor: theme.colors.primaryLight, borderRadius: theme.radius.md }}
+                                onPress={buscarVariacao}
+                                disabled={buscando}
+                            >
+                                <Text>{buscando ? "..." : "Buscar"}</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={{ padding: 10, backgroundColor: theme.colors.primaryLight, borderRadius: theme.radius.md }}
+                                onPress={abrirSelecao}
+                            >
+                                <Ionicons name="list" size={20} color={theme.colors.primary} />
+                            </TouchableOpacity>
+                        </View>
+
+                        {buscando && <ActivityIndicator size="small" color={theme.colors.primary} />}
+
+                        {varSelecionada && (
+                            <View style={{ backgroundColor: theme.colors.primaryLight, borderRadius: theme.radius.md, padding: 12, marginBottom: 12, flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+                                <View>
+                                    <Text style={{ fontFamily: theme.fonts.semiBold, color: theme.colors.primaryDark }}>
+                                        {produtosMap[varSelecionada.produto_id] || "Produto"}
+                                    </Text>
+                                    <Text style={{ fontSize: 12, color: theme.colors.primary }}>
+                                        Cód: {varSelecionada.codigo} · SKU: {varSelecionada.sku} · ID: {varSelecionada.id}
+                                    </Text>
+                                </View>
+                                <TouchableOpacity onPress={() => setVarSelecionada(null)}>
+                                    <Ionicons name="close-circle" size={20} color={theme.colors.primary} />
+                                </TouchableOpacity>
+                            </View>
+                        )}
+
+                        <SectionLabel titulo="Quantidade e custo" icone="calculator" />
+                        <View style={{ flexDirection: "row", gap: 12 }}>
+                            <View style={{ flex: 1 }}>
+                                <FormField label="Quantidade" value={quantidade} onChangeText={setQuantidade} keyboardType="numeric" />
+                            </View>
+                            <View style={{ flex: 1 }}>
+                                <FormField label="Custo unit. (R$)" value={custo} onChangeText={setCusto} keyboardType="decimal-pad" placeholder="0,00" />
+                            </View>
+                        </View>
+
+                        {quantidade && custo ? (
+                            <View style={{ backgroundColor: theme.colors.primaryLight, borderRadius: theme.radius.md, padding: 12, marginBottom: 20, flexDirection: "row", justifyContent: "space-between" }}>
+                                <Text style={{ color: theme.colors.primaryDark }}>Total do item</Text>
+                                <Text style={{ fontFamily: theme.fonts.semiBold, color: theme.colors.primary }}>
+                                    {(parseInt(quantidade || 0) * parseFloat((custo || "0").replace(",", "."))).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                                </Text>
+                            </View>
+                        ) : null}
+
+                        <PrimaryButton title="Adicionar item" onPress={handleAdd} icone="add-circle-outline" />
+                    </ScrollView>
+                </SafeAreaView>
+            </Modal>
+
+            {/* Modal de seleção de variação (lista com todas) */}
+            <Modal visible={selecaoVisible} animationType="slide" transparent={false}>
+                <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }}>
+                    <View style={{ flexDirection: "row", alignItems: "center", padding: 16, gap: 12 }}>
+                        <TouchableOpacity onPress={() => setSelecaoVisible(false)}>
+                            <Ionicons name="arrow-back" size={24} color={theme.colors.primary} />
+                        </TouchableOpacity>
+                        <Text style={{ fontFamily: theme.fonts.semiBold, fontSize: 18, color: theme.colors.text }}>Selecionar Variação</Text>
+                    </View>
+
+                    <View style={{ paddingHorizontal: 16, marginBottom: 8 }}>
+                        <TextInput
+                            style={{ backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.border, borderRadius: theme.radius.md, paddingHorizontal: 14, paddingVertical: 10, fontFamily: theme.fonts.regular, fontSize: 14 }}
+                            placeholder="Buscar por produto, código ou SKU"
+                            value={buscaSelecao}
+                            onChangeText={setBuscaSelecao}
+                        />
+                    </View>
+
+                    <FlatList
+                        data={variacoesFiltradas}
+                        keyExtractor={item => item.documentoId || String(item.id)}
+                        renderItem={({ item }) => {
+                            const saldo = saldosMapLocal[item.id] || 0;
+                            const nomeProd = produtosMap[item.produto_id] || "Produto";
+                            return (
+                                <TouchableOpacity
+                                    style={{
+                                        padding: 12,
+                                        borderBottomWidth: 1,
+                                        borderBottomColor: theme.colors.border,
+                                        flexDirection: "row",
+                                        justifyContent: "space-between",
+                                        alignItems: "center",
+                                    }}
+                                    onPress={() => selecionarVariacao(item)}
+                                >
+                                    <View>
+                                        <Text style={{ fontWeight: "bold" }}>{nomeProd}</Text>
+                                        <Text style={{ fontSize: 12, color: theme.colors.muted }}>
+                                            Cód: {item.codigo} | SKU: {item.sku}
+                                        </Text>
+                                    </View>
+                                    <View style={{ alignItems: "flex-end" }}>
+                                        <Text style={{ color: theme.colors.primary, fontWeight: "bold" }}>Saldo: {saldo}</Text>
+                                    </View>
+                                </TouchableOpacity>
+                            );
+                        }}
+                        ListEmptyComponent={<EmptyState mensagem="Nenhuma variação encontrada" />}
+                    />
+                </SafeAreaView>
+            </Modal>
+        </>
     );
 }
 
@@ -192,7 +327,7 @@ export default function NovaCompraScreen({ navigation }) {
     const [step, setStep] = useState(1);
     const [salvando, setSalvando] = useState(false);
 
-    // Dados Step 1
+    // Step 1
     const [fornecedor, setFornecedor] = useState(null);
     const [condpag, setCondpag] = useState(null);
     const [nf, setNf] = useState("");
@@ -200,11 +335,11 @@ export default function NovaCompraScreen({ navigation }) {
     const [obs, setObs] = useState("");
     const [showDate, setShowDate] = useState(false);
 
-    // Dados Step 2
+    // Step 2
     const [itens, setItens] = useState([]);
     const [addItemVisible, setAddItemVisible] = useState(false);
 
-    // Dados Step 3
+    // Step 3
     const [desconto, setDesconto] = useState("0");
     const [numParcelas, setNumParcelas] = useState("1");
     const [intervaloDias, setIntervaloDias] = useState("30");
@@ -214,22 +349,30 @@ export default function NovaCompraScreen({ navigation }) {
     const [condpags, setCondpags] = useState([]);
     const [variacoes, setVariacoes] = useState([]);
     const [produtos, setProdutos] = useState([]);
+    const [saldos, setSaldos] = useState({});
 
     // Modais seletor
     const [modalForn, setModalForn] = useState(false);
     const [modalCond, setModalCond] = useState(false);
 
+    // Carrega dados iniciais
     useEffect(() => {
         const unsubForn = escutaFornecedores((lista) => setFornecedores(lista));
         const unsubCond = escutaCondPag((lista) => setCondpags(lista));
 
         (async () => {
-            const [vRes, pRes] = await Promise.all([
+            const [vRes, pRes, sRes] = await Promise.all([
                 buscaVariacoes(),
                 buscaProdutos(),
+                buscaTodosSaldos(),
             ]);
             if (vRes.success) setVariacoes(vRes.variacoes);
             if (pRes.success) setProdutos(pRes.produtos);
+            if (sRes.success) {
+                const map = {};
+                sRes.saldos.forEach(s => { map[s.variacao_id] = s.quantidade; });
+                setSaldos(map);
+            }
         })();
 
         return () => {
@@ -260,12 +403,16 @@ export default function NovaCompraScreen({ navigation }) {
         const parcelas = condpag?.permite_parcelar ? (parseInt(numParcelas) || 1) : 1;
         const res = await finalizaCompra({
             fornecedor_id: fornecedor.documentoId,
-            condpag: { ...condpag, num_parcelas: parcelas, intervalo_dias: parseInt(intervaloDias) || 30 },
+            condpag: {
+                ...condpag,
+                num_parcelas: parcelas,
+                intervalo_dias: parseInt(intervaloDias) || 30
+            },
             nf,
             data: dataCompra,
             obs,
             desconto: descontoVal,
-            itens,
+            itens, // cada item tem { variacao_id, quantidade, custo_unitario, ... }
         });
         setSalvando(false);
 
@@ -444,7 +591,7 @@ export default function NovaCompraScreen({ navigation }) {
                                 </View>
                             </View>
 
-                            {/* Parcelamento — só aparece se condpag permite */}
+                            {/* Parcelamento */}
                             {condpag?.permite_parcelar && (
                                 <>
                                     <SectionLabel titulo="Parcelamento" icone="layers-outline" />
@@ -561,6 +708,7 @@ export default function NovaCompraScreen({ navigation }) {
                     onAdd={(item) => setItens([...itens, item])}
                     variacoes={variacoes}
                     produtos={produtos}
+                    saldosMap={saldos}
                 />
             </SafeAreaView>
         </SafeAreaProvider>

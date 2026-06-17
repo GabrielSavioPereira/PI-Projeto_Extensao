@@ -62,20 +62,6 @@ export default function HomeScreen({ navigation }) {
             onPress:    () => navigation.navigate("Produtos"),
         },
         {
-            label:      "Estoque\nBaixo",
-            value:      "Em breve",
-            color:      "#E07B54",
-            bg:         "#FDF0EB",
-            disponivel: false,
-        },
-        {
-            label:      "Saldo\nFinanceiro",
-            value:      "Em breve",
-            color:      "#7B84C9",
-            bg:         "#EDEAFD",
-            disponivel: false,
-        },
-        {
             label:      "Vendas\nno Mês",
             value:      loadingVendas
                             ? "..."
