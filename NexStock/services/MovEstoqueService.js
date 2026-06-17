@@ -16,7 +16,8 @@ import {
 } from "firebase/firestore";
 
 import { COLLECTIONS } from "../database/collections";
-import { buscaVariacaoId } from "./ProdutoVariacaoService";
+// Importa a nova função de busca por ID numérico
+import { buscaVariacaoPorIdNumerico } from "./ProdutoVariacaoService";
 import { atualizaSaldo, buscaSaldoPorVariacao } from "./SaldoVariacaoService";
 
 const movStockRef = collection(db, COLLECTIONS.MOV_ESTOQUE);
@@ -70,7 +71,6 @@ async function proximoIdMovimentacao() {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ENTRADA de estoque
-// Registra movimentação + atualiza saldo da variação
 // ─────────────────────────────────────────────────────────────────────────────
 export async function entradaEstoque(variacao_id, quantidade, motivo = "Compra") {
     try {
@@ -81,9 +81,9 @@ export async function entradaEstoque(variacao_id, quantidade, motivo = "Compra")
             };
         }
 
-        // Verifica se a variação existe
-        const variacaoResp = await buscaVariacaoId(variacao_id);
-        if (!variacaoResp || !variacaoResp.success) {
+        // Verifica se a variação existe usando o ID numérico
+        const variacaoResp = await buscaVariacaoPorIdNumerico(variacao_id);
+        if (!variacaoResp) {
             return {
                 success: false,
                 message: "Variação não encontrada: " + variacao_id
@@ -137,7 +137,6 @@ export async function entradaEstoque(variacao_id, quantidade, motivo = "Compra")
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SAÍDA de estoque
-// Registra movimentação + atualiza saldo da variação
 // ─────────────────────────────────────────────────────────────────────────────
 export async function saidaEstoque(variacao_id, quantidade, motivo = "Venda") {
     try {
@@ -148,9 +147,9 @@ export async function saidaEstoque(variacao_id, quantidade, motivo = "Venda") {
             };
         }
 
-        // Verifica se a variação existe
-        const variacaoResp = await buscaVariacaoId(variacao_id);
-        if (!variacaoResp || !variacaoResp.success) {
+        // Verifica se a variação existe usando o ID numérico
+        const variacaoResp = await buscaVariacaoPorIdNumerico(variacao_id);
+        if (!variacaoResp) {
             return {
                 success: false,
                 message: "Variação não encontrada: " + variacao_id
@@ -211,7 +210,7 @@ export async function saidaEstoque(variacao_id, quantidade, motivo = "Venda") {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Define a quantidade diretamente, sem verificar saldo mínimo
+// AJUSTE de estoque
 // ─────────────────────────────────────────────────────────────────────────────
 export async function ajusteEstoque(variacao_id, quantidadeNova, motivo = "Ajuste de inventário") {
     try {
@@ -222,8 +221,9 @@ export async function ajusteEstoque(variacao_id, quantidadeNova, motivo = "Ajust
             };
         }
 
-        const variacaoResp = await buscaVariacaoId(variacao_id);
-        if (!variacaoResp || !variacaoResp.success) {
+        // Verifica se a variação existe usando o ID numérico
+        const variacaoResp = await buscaVariacaoPorIdNumerico(variacao_id);
+        if (!variacaoResp) {
             return {
                 success: false,
                 message: "Variação não encontrada: " + variacao_id
@@ -366,7 +366,7 @@ export async function buscaTodasMovimentacoes(limiteDocs = 50) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// BUSCAR movimentações por tipo (ENTRADA / SAIDA / AJUSTE_ENTRADA / AJUSTE_SAIDA)
+// BUSCAR movimentações por tipo
 // ─────────────────────────────────────────────────────────────────────────────
 export async function buscaMovPorTipo(tipo) {
     try {
@@ -395,7 +395,6 @@ export async function buscaMovPorTipo(tipo) {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // DELETAR movimentação (somente registro — NÃO estorna o saldo)
-// Use com cautela; prefira ajusteEstoque para correções.
 // ─────────────────────────────────────────────────────────────────────────────
 export async function deletaMovimentacao(docId) {
     try {

@@ -6,76 +6,70 @@ import {
     TouchableOpacity,
     Alert,
     ActivityIndicator,
-    RefreshControl
+    RefreshControl,
+    SafeAreaView,
+    StyleSheet
 } from "react-native";
-import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
 
 import { Header, SearchBar, Card, theme, EmptyState } from "../components/ui";
 import { buscaTodosSaldos } from "../services/SaldoVariacaoService";
-import { buscaVariacaoPorTexto } from "../services/ProdutoVariacaoService";
-import { buscaProdutoId } from "../services/ProdutoService";
+import { buscaVariacoes } from "../services/ProdutoVariacaoService";
+import { buscaProdutos } from "../services/ProdutoService";
+import { buscaCores } from "../services/CorService";
+import { buscaTams } from "../services/TamanhoService";
 
 export default function SaldoEstoqueScreen({ navigation }) {
-    const [lista, setLista] = useState([]);
-    const [listaFiltrada, setListaFiltrada] = useState([]);
+    const [itens, setItens] = useState([]);
+    const [itensFiltrados, setItensFiltrados] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [busca, setBusca] = useState("");
 
     const carregarDados = async () => {
         try {
-            // 1. Busca todos os saldos
-            const saldosRes = await buscaTodosSaldos();
-            if (!saldosRes.success) throw new Error(saldosRes.message);
-            const saldos = saldosRes.saldos || [];
+            const [saldosRes, variacoesRes, produtosRes] = await Promise.all([
+                buscaTodosSaldos(),
+                buscaVariacoes(),
+                buscaProdutos()
+            ]);
 
-            // 2. Para cada saldo, busca variação e produto
-            const items = [];
-            for (const saldo of saldos) {
-                let item = {
-                    id: saldo.documentoId,
+            const saldosList = (saldosRes?.success && Array.isArray(saldosRes.saldos)) ? saldosRes.saldos : [];
+            const variacoesList = (variacoesRes?.success && Array.isArray(variacoesRes.variacoes)) ? variacoesRes.variacoes : [];
+            const produtosList = (produtosRes?.success && Array.isArray(produtosRes.produtos)) ? produtosRes.produtos : [];
+
+            const variacoesMap = {};
+            variacoesList.forEach(v => { variacoesMap[v.id] = v; });
+
+            const produtosMap = {};
+            produtosList.forEach(p => { produtosMap[p.id] = p; });
+
+            const items = saldosList.map(saldo => {
+                const variacao = variacoesMap[saldo.variacao_id];
+                const produto = variacao ? produtosMap[variacao.produto_id] : null;
+                return {
                     variacaoId: saldo.variacao_id,
-                    quantidade: saldo.quantidade,
-                    codigo: "---",
-                    sku: "---",
-                    corId: "?",
-                    tamId: "?",
-                    produtoId: null,
-                    produtoNome: "Carregando..."
+                    quantidade: saldo.quantidade || 0,
+                    codigo: variacao?.codigo || "---",
+                    sku: variacao?.sku || "---",
+                    corId: variacao?.cor_id ?? "?",
+                    tamId: variacao?.tamanho_id ?? "?",
+                    produtoId: variacao?.produto_id,
+                    produtoNome: produto?.nome || "Produto não encontrado",
+                    documentoId: saldo.documentoId,
                 };
+            });
 
-                // Busca a variação usando o variacao_id (que é numérico)
-                const variacao = await buscaVariacaoPorTexto(String(saldo.variacao_id));
-                if (variacao) {
-                    item.codigo = variacao.codigo || "---";
-                    item.sku = variacao.sku || "---";
-                    item.corId = variacao.cor_id ?? "?";
-                    item.tamId = variacao.tamanho_id ?? "?";
-                    item.produtoId = variacao.produto_id;
-
-                    // Busca o produto
-                    if (item.produtoId) {
-                        const produtoRes = await buscaProdutoId(item.produtoId);
-                        if (produtoRes) {
-                            item.produtoNome = produtoRes.nome;
-                        } else {
-                            item.produtoNome = "Produto não encontrado";
-                        }
-                    } else {
-                        item.produtoNome = "Sem produto associado";
-                    }
-                } else {
-                    item.produtoNome = `Variação não encontrada (ID: ${saldo.variacao_id})`;
-                }
-
-                items.push(item);
-            }
-
-            setLista(items);
-            setListaFiltrada(items);
+            // Ordena por nome do produto
+            items.sort((a, b) => a.produtoNome.localeCompare(b.produtoNome));
+            setItens(items);
+            setItensFiltrados(items);
         } catch (error) {
             console.error(error);
             Alert.alert("Erro", "Não foi possível carregar os saldos");
+            setItens([]);
+            setItensFiltrados([]);
         } finally {
             setLoading(false);
             setRefreshing(false);
@@ -88,58 +82,96 @@ export default function SaldoEstoqueScreen({ navigation }) {
 
     useEffect(() => {
         if (!busca.trim()) {
-            setListaFiltrada(lista);
-        } else {
-            const termo = busca.toLowerCase();
-            const filtrados = lista.filter(item =>
-                item.produtoNome.toLowerCase().includes(termo) ||
-                item.codigo.toLowerCase().includes(termo) ||
-                item.sku.toLowerCase().includes(termo)
-            );
-            setListaFiltrada(filtrados);
+            setItensFiltrados(itens);
+            return;
         }
-    }, [busca, lista]);
+        const termo = busca.toLowerCase();
+        const filtrados = itens.filter(item =>
+            item.produtoNome.toLowerCase().includes(termo) ||
+            item.codigo.toLowerCase().includes(termo) ||
+            item.sku.toLowerCase().includes(termo)
+        );
+        setItensFiltrados(filtrados);
+    }, [busca, itens]);
 
     const onRefresh = useCallback(() => {
         setRefreshing(true);
         carregarDados();
     }, []);
 
-    const verMovimentacoes = (item) => {
+    const verMovimentacoes = (variacaoId, produtoNome, codigo, sku) => {
         navigation.navigate("MovimentacaoEstoque", {
-            variacaoId: item.variacaoId,
-            variacaoCodigo: item.codigo,
-            variacaoSku: item.sku,
-            produtoNome: item.produtoNome,
-            saldoAtual: item.quantidade
+            variacaoId: variacaoId,
+            produtoNome: produtoNome,
+            codigo: codigo,
+            sku: sku,
+            filtroVariacao: true,
         });
     };
 
+    const [cores, setCores] = useState([]);
+    
+    const buscaCor = (id) => {
+        const cor = cores.find(c => c.id === id);
+
+        return cor.nome
+    }
+
+    const [tams, setTams] = useState([]);
+
+    const buscaTamanho = (id) => {
+        const tam = tams.find(t => t.id === id);
+
+        return tam.nome
+    }
+
+    useEffect(() => {
+        const carregarCores = async () => {
+            
+            const res = await buscaCores();
+
+            if (!res.success) {
+                setCores(null)
+            }
+
+            setCores(res.cores);
+        };
+
+        const carregarTamanhos = async () => {
+            const res = await buscaTams();
+
+            setTams(res.tams)
+        }
+
+        carregarTamanhos();
+        carregarCores();
+    }, []);
+
     const renderItem = ({ item }) => (
-        <Card style={{ marginBottom: 12 }}>
-            <TouchableOpacity onPress={() => verMovimentacoes(item)} activeOpacity={0.7}>
-                <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-                    <View style={{ flex: 1 }}>
-                        <Text style={{ fontFamily: theme.fonts.semiBold, fontSize: 16 }}>{item.produtoNome}</Text>
-                        <Text style={{ fontFamily: theme.fonts.regular, fontSize: 13, color: theme.colors.primary }}>
-                            Código: {item.codigo} | SKU: {item.sku}
-                        </Text>
-                        <Text style={{ fontFamily: theme.fonts.regular, fontSize: 12, color: theme.colors.muted }}>
-                            Cor: {item.corId} | Tam: {item.tamId}
-                        </Text>
-                    </View>
-                    <View style={{ alignItems: "flex-end" }}>
-                        <Text style={{ fontFamily: theme.fonts.semiBold, fontSize: 22, color: theme.colors.primary }}>
-                            {item.quantidade}
-                        </Text>
-                        <Text style={{ fontSize: 11, color: theme.colors.muted }}>unidades</Text>
-                    </View>
-                </View>
-                <View style={{ flexDirection: "row", justifyContent: "flex-end", marginTop: 8 }}>
-                    <Text style={{ fontSize: 12, color: theme.colors.primary }}>Ver movimentações →</Text>
-                </View>
-            </TouchableOpacity>
-        </Card>
+        <TouchableOpacity
+            style={styles.card}
+            onPress={() => verMovimentacoes(item.variacaoId, item.produtoNome, item.codigo, item.sku)}
+            activeOpacity={0.8}
+        >
+            <View style={styles.cardHeader}>
+                <Text style={styles.produtoNome}>{item.produtoNome}</Text>
+                <Text style={styles.quantidade}>{item.quantidade}</Text>
+            </View>
+            <View style={styles.cardBody}>
+                <Text style={styles.detalhe}>
+                    <Ionicons name="pricetag-outline" size={14} color={theme.colors.muted} /> Cód: {item.codigo}
+                </Text>
+                <Text style={styles.detalhe}>
+                    <Ionicons name="barcode-outline" size={14} color={theme.colors.muted} /> SKU: {item.sku}
+                </Text>
+                <Text style={styles.detalhe}>
+                    <Ionicons name="color-palette-outline" size={14} color={theme.colors.muted} /> Cor: {buscaCor(item.corId)} | Tam: {buscaTamanho(item.tamId)}
+                </Text>
+            </View>
+            <View style={styles.cardFooter}>
+                <Text style={styles.verMovimentacoes}>Ver movimentações →</Text>
+            </View>
+        </TouchableOpacity>
     );
 
     if (loading) {
@@ -155,12 +187,16 @@ export default function SaldoEstoqueScreen({ navigation }) {
         <SafeAreaProvider>
             <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }}>
                 <Header title="Saldo em Estoque" />
-                <SearchBar value={busca} onChangeText={setBusca} placeholder="Buscar por produto, código ou SKU" />
+                <SearchBar
+                    value={busca}
+                    onChangeText={setBusca}
+                    placeholder="Buscar por produto, código ou SKU"
+                />
                 <FlatList
-                    data={listaFiltrada}
-                    keyExtractor={item => item.id}
+                    data={itensFiltrados}
+                    keyExtractor={item => String(item.variacaoId)}
                     renderItem={renderItem}
-                    contentContainerStyle={{ padding: 16 }}
+                    contentContainerStyle={{ padding: 16, paddingBottom: 30 }}
                     refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
                     ListEmptyComponent={<EmptyState mensagem="Nenhum saldo encontrado" />}
                 />
@@ -168,3 +204,51 @@ export default function SaldoEstoqueScreen({ navigation }) {
         </SafeAreaProvider>
     );
 }
+
+const styles = StyleSheet.create({
+    card: {
+        backgroundColor: theme.colors.surface,
+        borderRadius: theme.radius.lg,
+        padding: 14,
+        marginBottom: 12,
+        borderLeftWidth: 4,
+        borderLeftColor: theme.colors.primary,
+        ...theme.shadow,
+    },
+    cardHeader: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginBottom: 6,
+    },
+    produtoNome: {
+        fontFamily: theme.fonts.semiBold,
+        fontSize: 16,
+        color: theme.colors.text,
+        flex: 1,
+    },
+    quantidade: {
+        fontFamily: theme.fonts.bold,
+        fontSize: 22,
+        color: theme.colors.primary,
+        marginLeft: 8,
+    },
+    cardBody: {
+        marginTop: 4,
+    },
+    detalhe: {
+        fontFamily: theme.fonts.regular,
+        fontSize: 13,
+        color: theme.colors.secondary,
+        marginVertical: 2,
+    },
+    cardFooter: {
+        marginTop: 8,
+        alignItems: "flex-end",
+    },
+    verMovimentacoes: {
+        fontFamily: theme.fonts.medium,
+        fontSize: 13,
+        color: theme.colors.primary,
+    },
+});

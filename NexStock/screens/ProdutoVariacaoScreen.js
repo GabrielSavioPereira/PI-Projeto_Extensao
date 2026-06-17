@@ -24,7 +24,7 @@ import {
     theme,
 } from "../components/ui";
 
-// Picker customizado (sem dependência externa)
+// Picker customizado
 function PickerField({ label, valor, placeholder, opcoes, onSelect, desabilitado = false }) {
     const [aberto, setAberto] = useState(false);
     const selecionado = opcoes.find((o) => o.value === valor);
@@ -172,8 +172,9 @@ export default function ProdutoVariacaoScreen({ route, navigation }) {
     const [produto_id, setProdutoId] = useState(null);
     const [cor_id, setCorId] = useState(null);
     const [tamanho_id, setTamanhoId] = useState(null);
-    const [codigo, setCodigo] = useState("");     // NOVO campo código da variação
+    const [codigo, setCodigo] = useState("");
     const [sku, setSku] = useState("");
+    const [barcode, setBarcode] = useState("");
     const [preco_custo, setPrecoCusto] = useState("");
     const [preco_venda, setPrecoVenda] = useState("");
     const [salvando, setSalvando] = useState(false);
@@ -200,6 +201,7 @@ export default function ProdutoVariacaoScreen({ route, navigation }) {
             setTamanhoId(variacao.tamanho_id ?? null);
             setCodigo(variacao.codigo ?? "");
             setSku(variacao.sku ?? "");
+            setBarcode(variacao.barcode ?? "");
             setPrecoCusto(variacao.preco_custo?.toString() ?? "");
             setPrecoVenda(variacao.preco_venda?.toString() ?? "");
         } else if (produtoFixo && produtoFixo.id) {
@@ -222,7 +224,7 @@ export default function ProdutoVariacaoScreen({ route, navigation }) {
         const tamSig = tamanhoSelecionado.nome.toUpperCase();
         const gerado = `${codigoProduto}-${corSig}-${tamSig}`;
         setSku(gerado);
-        setCodigo(gerado);  
+        setCodigo(gerado);
     }
 
     function validar() {
@@ -245,6 +247,7 @@ export default function ProdutoVariacaoScreen({ route, navigation }) {
             tamanho_id,
             codigo: codigo.trim(),
             sku: sku.trim(),
+            barcode: barcode.trim(),
             preco_custo: parseFloat(preco_custo) || 0,
             preco_venda: parseFloat(preco_venda)
         };
@@ -254,8 +257,8 @@ export default function ProdutoVariacaoScreen({ route, navigation }) {
             response = await alteraVariacao(variacao.documentoId, obj);
         } else {
             response = await addVariacao(obj);
-            if (response.success && response.id) {
-                await inicializaSaldo(response.id);
+            if (response.success && response.proximoId) {
+                await inicializaSaldo(response.proximoId);
             }
         }
 
@@ -317,7 +320,7 @@ export default function ProdutoVariacaoScreen({ route, navigation }) {
                                     {codigo ? (
                                         <View style={[styles.previewTag, { backgroundColor: theme.colors.primaryLight }]}>
                                             <Text style={[styles.previewTagText, { color: theme.colors.primary }]}>
-                                                Código: {codigo}
+                                                Cód: {codigo}
                                             </Text>
                                         </View>
                                     ) : null}
@@ -325,6 +328,13 @@ export default function ProdutoVariacaoScreen({ route, navigation }) {
                                         <View style={[styles.previewTag, { backgroundColor: theme.colors.primaryLight }]}>
                                             <Text style={[styles.previewTagText, { color: theme.colors.primary }]}>
                                                 SKU: {sku}
+                                            </Text>
+                                        </View>
+                                    ) : null}
+                                    {barcode ? (
+                                        <View style={[styles.previewTag, { backgroundColor: theme.colors.primaryLight }]}>
+                                            <Text style={[styles.previewTagText, { color: theme.colors.primary }]}>
+                                                Barras: {barcode}
                                             </Text>
                                         </View>
                                     ) : null}
@@ -358,6 +368,7 @@ export default function ProdutoVariacaoScreen({ route, navigation }) {
                         <SectionLabel titulo="Identificação" icone="barcode-outline" />
                         <FormField label="Código da variação *" value={codigo} onChangeText={setCodigo} placeholder="Código único (ex: CAM001)" autoCapitalize="characters" />
                         <FormField label="SKU *" value={sku} onChangeText={setSku} placeholder="Código de barras / SKU" autoCapitalize="characters" />
+                        <FormField label="Código de Barras" value={barcode} onChangeText={setBarcode} placeholder="Código de barras (opcional)" autoCapitalize="characters" />
 
                         <TouchableOpacity style={styles.btnGerar} onPress={gerarCodigoESku}>
                             <Text style={styles.btnGerarText}>Gerar código e SKU automaticamente</Text>

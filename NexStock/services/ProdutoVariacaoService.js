@@ -48,7 +48,7 @@ export async function addVariacao(variacao) {
         if (!snapshotValid.empty) {
             return {
                 success: false,
-                message: "Já existe variação com estas caracteristicas",
+                message: "Já existe variação com estas características",
             }
         }
 
@@ -60,23 +60,29 @@ export async function addVariacao(variacao) {
             proximoId = ultimoVariacao.id + 1;
         }
         const novaVariacao = `Variacao${proximoId}`;
-        await setDoc(doc(variacaoRef, novaVariacao), { id: proximoId, ...variacao })
+        // Inclui barcode se existir
+        const dados = {
+            id: proximoId,
+            ...variacao,
+            barcode: variacao.barcode || ''
+        };
+        await setDoc(doc(variacaoRef, novaVariacao), dados)
         return {
             success: true,
             id: novaVariacao,
-            message: "Variacao Criada com Sucesso!"
+            proximoId,
+            message: "Variação Criada com Sucesso!"
         }
     } catch(e){
         return {
             success: false,
-            message: "Erro ao criar a Variacao",
+            message: "Erro ao criar a Variação",
             error: e
         }
     }
 }
 
-// CORRIGIDO: busca pelo documentoId (string do Firestore, ex: "Variacao5")
-// em vez do campo numérico "id"
+// Busca pelo documentoId (string do Firestore)
 export async function buscaVariacaoId(documentoId) {
     try {
         const docRef = doc(variacaoRef, documentoId);
@@ -86,19 +92,19 @@ export async function buscaVariacaoId(documentoId) {
     } catch (e) {
         return {
             success: false,
-            message: "Erro ao buscar a variacao " + documentoId.toString(),
+            message: "Erro ao buscar a variação " + documentoId.toString(),
             error: e
         }
     }
 }
 
-export async function buscaVariacoes(){
+export async function buscaVariacoes() {
     try {
         const snapshot = await getDocs(variacaoRef);
-        const variacoes = snapshot.docs.map(doc => ({ documentoId: doc.id, ...doc.data() }))
-        return { success: true, variacoes }
+        const variacoes = snapshot.docs.map(doc => ({ documentoId: doc.id, ...doc.data() }));
+        return { success: true, variacoes: variacoes || [] };
     } catch(e) {
-        return { success: false, message: "Erro ao buscar os variacoes", error: e }
+        return { success: false, message: "Erro ao buscar as variações", error: e, variacoes: [] };
     }
 }
 
@@ -123,7 +129,7 @@ export async function deletaVariacao(id){
         return { success: true }
     } catch(e) {
         console.log(e)
-        return { success: false, message: "Erro ao deletar a variacao: " + id.toString(), error: e }
+        return { success: false, message: "Erro ao deletar a variação: " + id.toString(), error: e }
     }
 }
 
@@ -161,7 +167,19 @@ export async function buscaVariacaoPorSku(sku) {
     }
 }
 
-// Busca variação por texto (código ou SKU) - útil para busca em tempo real
+// Busca variação pelo código de barras
+export async function buscaVariacaoPorBarcode(barcode) {
+    try {
+        const q = query(variacaoRef, where("barcode", "==", barcode));
+        const snapshot = await getDocs(q);
+        if (snapshot.empty) return null;
+        return { documentoId: snapshot.docs[0].id, ...snapshot.docs[0].data() };
+    } catch (error) {
+        return null;
+    }
+}
+
+// Busca variação por texto (código, SKU, barcode ou ID numérico)
 export async function buscaVariacaoPorTexto(texto) {
     try {
         if (!texto) return null;
@@ -174,6 +192,13 @@ export async function buscaVariacaoPorTexto(texto) {
         }
         // Tenta buscar pelo campo 'sku'
         q = query(variacaoRef, where("sku", "==", texto));
+        snapshot = await getDocs(q);
+        if (!snapshot.empty) {
+            const d = snapshot.docs[0];
+            return { documentoId: d.id, ...d.data() };
+        }
+        // Tenta buscar pelo campo 'barcode'
+        q = query(variacaoRef, where("barcode", "==", texto));
         snapshot = await getDocs(q);
         if (!snapshot.empty) {
             const d = snapshot.docs[0];
@@ -192,6 +217,18 @@ export async function buscaVariacaoPorTexto(texto) {
         return null;
     } catch (error) {
         console.error("Erro buscaVariacaoPorTexto:", error);
+        return null;
+    }
+}
+
+export async function buscaVariacaoPorIdNumerico(idNumerico) {
+    try {
+        const q = query(variacaoRef, where("id", "==", idNumerico));
+        const snapshot = await getDocs(q);
+        if (snapshot.empty) return null;
+        const d = snapshot.docs[0];
+        return { documentoId: d.id, ...d.data() };
+    } catch (e) {
         return null;
     }
 }
