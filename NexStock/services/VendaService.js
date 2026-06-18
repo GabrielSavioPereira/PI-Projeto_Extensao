@@ -16,9 +16,6 @@ import { saidaEstoque } from "./MovEstoqueService";
 
 const vendaRef = collection(db, COLLECTIONS.VENDAS);
 
-// ─────────────────────────────────────────────────────────────────────────────
-// LISTENER em tempo real — todas as vendas
-// ─────────────────────────────────────────────────────────────────────────────
 export function escutaVendas(callback) {
     return onSnapshot(
         query(vendaRef, orderBy("id", "desc")),
@@ -32,23 +29,15 @@ export function escutaVendas(callback) {
     );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// BUSCA vendas do mês (por Timestamp)
-// mes e ano são números (ex: 5, 2025)
-// ─────────────────────────────────────────────────────────────────────────────
 export async function buscaVendasDoMes(mes, ano) {
     try {
         const inicio = Timestamp.fromDate(new Date(ano, mes - 1, 1, 0, 0, 0));
-        const fim    = Timestamp.fromDate(new Date(ano, mes, 1, 0, 0, 0)); // início do mês seguinte
+        const fim    = Timestamp.fromDate(new Date(ano, mes, 1, 0, 0, 0));
 
         const snapshot = await getDocs(
-            query(
-                vendaRef,
-                orderBy("criado_em", "desc")
-            )
+            query(vendaRef, orderBy("criado_em", "desc"))
         );
 
-        // Filtra no cliente (evita precisar de índice composto no Firestore)
         const lista = [];
         snapshot.forEach((d) => {
             const data = d.data();
@@ -68,31 +57,28 @@ export async function buscaVendasDoMes(mes, ano) {
     }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-export async function addVenda(itens, formaPagamento, parcelas, desconto) {
+// clienteId → número (campo "id" do cliente) ou null
+export async function addVenda(itens, formaPagamento, parcelas, desconto, clienteId) {
     try {
-        // ── Próximo ID sequencial ──────────────────────────────────────────────
         const q    = query(vendaRef, orderBy("id", "desc"), limit(1));
         const snap = await getDocs(q);
         const proximoId = snap.empty ? 1 : snap.docs[0].data().id + 1;
         const docName   = `venda${proximoId}`;
 
-        // ── Cálculos financeiros ───────────────────────────────────────────────
         const subtotal = itens.reduce(
-            (acc, item) => acc + item.preco_venda * item.quantidade,
-            0
+            (acc, item) => acc + item.preco_venda * item.quantidade, 0
         );
         const descontoValor = desconto
             ? Math.min(parseFloat(desconto.replace(",", ".")) || 0, subtotal)
             : 0;
         const total = subtotal - descontoValor;
 
-        // ── Grava a venda ──────────────────────────────────────────────────────
         await setDoc(doc(vendaRef, docName), {
             id: proximoId,
+            cliente_id: clienteId ?? null,
             itens: itens.map((item) => ({
-                variacao_id:     item.id,           // numérico
-                variacao_doc_id: item.documentoId,  // ex: "Variacao3"
+                variacao_id:     item.id,
+                variacao_doc_id: item.documentoId,
                 produto_nome:    item.produto_nome,
                 codigo:          item.codigo || "",
                 preco_venda:     item.preco_venda,
@@ -107,8 +93,6 @@ export async function addVenda(itens, formaPagamento, parcelas, desconto) {
             criado_em:       Timestamp.now(),
         });
 
-        // ── Movimenta estoque via saidaEstoque (grava mov + atualiza saldo) ───
-        // saidaEstoque(variacao_id_numerico, quantidade, motivo)
         const erros = [];
         for (const item of itens) {
             const res = await saidaEstoque(
@@ -132,10 +116,6 @@ export async function addVenda(itens, formaPagamento, parcelas, desconto) {
         };
     } catch (e) {
         console.error("addVenda:", e);
-        return {
-            success: false,
-            message: "Erro ao registrar a venda.",
-            error:   e,
-        };
+        return { success: false, message: "Erro ao registrar a venda.", error: e };
     }
 }
